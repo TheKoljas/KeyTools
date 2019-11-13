@@ -15,6 +15,7 @@ public class KeyTools {
     final static byte AUTHENT = 0x08;
     final static byte READBLOCK = 0x0A;
     final static byte WRITEBLOCK = 0x0C;
+    final static byte UNLOCK = 0x0E;
 
     public static boolean Busy;                        // Семафор занятости
 
@@ -58,7 +59,7 @@ public class KeyTools {
     public CryptoKey[] CulcKeys(){
         Crapto1 cr = new Crapto1();
         CryptoKey[] Crk, crk1;
-        int n = sn[0].nkey *(nSniff - 1)*nSniff / 2;
+        int n = sn[0].nkey *(nSniff - 1)*nSniff / 2;    //Максимально возможное число ключей
         Crk = new CryptoKey[n];
         int jcrk = 0;
         cr.uid = uid;
@@ -122,6 +123,7 @@ public class KeyTools {
         return s;
     }
 
+
     public void IntToByteArray(int d, byte[] b, int n){
         b[n + 3] = (byte)(d & 0xFF);
         d >>>= 8;
@@ -148,7 +150,6 @@ public class KeyTools {
     }
 
 
-
     public boolean TestPort(UsbSerialPort sPort) {
         if (sPort == null) {
             ErrMsg = "Ошибка адаптера - порт не открыт!";
@@ -165,6 +166,7 @@ public class KeyTools {
         }
         return true;
     }
+
 
     boolean SerialRead(UsbSerialPort sPort, byte[] buffer, int timeout)throws IOException {
         long start = System.currentTimeMillis();
@@ -187,7 +189,7 @@ public class KeyTools {
 
     boolean GetInfo(UsbSerialPort sPort) throws IOException {
 
-        int lentgh = 7;
+        int lentgh = 9;
         byte[] writebuffer = new byte[3];
         writebuffer[0] = (byte) CMD;
         writebuffer[1] = GETINFO;
@@ -205,6 +207,7 @@ public class KeyTools {
         }
         return true;
     }
+
 
     public boolean readuid(UsbSerialPort sPort) throws IOException {
 
@@ -227,6 +230,7 @@ public class KeyTools {
 
         return true;
     }
+
 
     public boolean getsniff(UsbSerialPort sPort, int jsn) throws IOException {
 
@@ -347,4 +351,6 @@ public class KeyTools {
 
         return true;
     }
+
+
 }

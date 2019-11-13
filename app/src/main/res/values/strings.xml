@@ -15,4 +15,52 @@
     <string name="menu_send">Send</string>
 
     <string name="keytools">KeyTools</string>
+
+    <string name="wc1">Код</string>
+    <string name="wc2">Считать с оригинала</string>
+    <string name="wc3">Число захватов</string>
+    <string name="wc4">Записать копию на Classic</string>
+    <string name="wc5">1234ABCD</string>
+    <string name="wc6">Отмена</string>
+    <string name="wc7">OK</string>
+    <string name="wc8">Следующий</string>
+    <string name="wc9">Захват данных от считывателя</string>
+    <string name="wc10">Поднесите устройство к считывателю</string>
+    <string name="wc11">Ошибка ввода ! Число захватов меньше 2 !</string>
+    <string name="wc12">Ошибка ввода UID !</string>
+    <string name="wc13">Ошибка ввода !</string>
+    <string name="wc14">Считывание UID</string>
+    <string name="wc15">Поднесите заготовку Classic к устройству</string>
+    <string name="wc16">Запись на эту метку невозможна! Поменяйте метку!</string>
+    <string name="wc17">Захват данных</string>
+    <string name="wc18">Поднесите устройство \nк считывателю  \n1 - я попытка</string>
+    <string name="wc19">Подождите - \nидет захват!\n</string>
+    <string name="wc20">попытка</string>
+    <string name="wc21">Расчет ключей</string>
+    <string name="wc22">Подождите ...</string>
+    <string name="wc23">\nРезультат расчета криптоключей :</string>
+    <string name="wc24">\nОбнаружен ФИЛЬТР ОТР !</string>
+    <string name="wc25">\nUID %08X \nНайдено ключей - %d :</string>
+    <string name="wc26">UID не совпадает! Попробуйте другую заготовку!</string>
+    <string name="wc27">Запись заготовки</string>
+    <string name="wc28">Поднесите заготовку Mifare Classic к устройству</string>
+    <string name="wc29">Ошибка записи</string>
+    <string name="wc30">Проверка</string>
+    <string name="wc31">Проверьте записанную метку</string>
+    <string name="wc32">Еще</string>
+    <string name="wc33">Стереть</string>
+    <string name="wc34">\nЗапись успешно завершена.\nKEY = %012X</string>
+    <string name="wc35">\nОшибка адаптера! Операция прервана</string>
+    <string name="wc36">\nМетка стерта</string>
+    <string name="wc37">\nBlock %d   %s \nKEY %d = %012X</string>
+    <string name="wc38">\nОперация прервана</string>
+
+    <string name="kg1">Захват данных ...</string>
+    <string name="kg2">Рассчет ключей ...</string>
+    <string name="kg3">Рассчет окончен</string>
+    <string name="kg4">\nОбнаружен ФИЛЬТР ОТР !</string>
+    <string name="kg5">\nОперация прервана</string>
+    <string name="kg6">\nUID %08X \nНайдено ключей - %d :</string>
+    <string name="kg7">\nBlock %d  %s \nKEY %d = %012X</string>
+
 </resources>

@@ -51,12 +51,12 @@ public class WriteClassicFragment extends Fragment {
 
         final View root = inflater.inflate(R.layout.fragment_writeclassic, container, false);
 
-        TextWin = root.findViewById(R.id.textWin);
+        TextWin = (TextView)root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 
         TextEdit = (EditText) root.findViewById(R.id.TextBar);
-        TextEdit.setText("1234ABCD");
+        TextEdit.setText(R.string.wc5);
 
         NumSniff = (EditText) root.findViewById(R.id.NumSniff2);
 
@@ -83,25 +83,25 @@ public class WriteClassicFragment extends Fragment {
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
-        pd.setButton(Dialog.BUTTON_NEGATIVE, "Отмена", new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_NEGATIVE, getString(R.string.wc6), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 Cancel();
             }
         });
 
-        pd.setButton(Dialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.wc7), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 smf = 1;
             }
         });
-        pd.setButton(Dialog.BUTTON_NEUTRAL, "Следующий", new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_NEUTRAL, getString(R.string.wc32), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which)
             {
                 smf = 2;
             }
         });
-        pd.setTitle("Захват данных от считывателя");
-        pd.setMessage("Поднесите PN532 к считывателю");
+        pd.setTitle(getString(R.string.wc9));
+        pd.setMessage(getString(R.string.wc10));
 
         return root;
     }
@@ -148,8 +148,7 @@ public class WriteClassicFragment extends Fragment {
         try {
             int nSniff = Integer.parseInt(NumSniff.getText().toString());
             if(nSniff < 2){
-                Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода !\n" +
-                        "Число захватов меньше 2 !", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this.getContext(), R.string.wc11, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
@@ -157,14 +156,14 @@ public class WriteClassicFragment extends Fragment {
             writekey = new WriteClassic(nSniff);
             String s = TextEdit.getText().toString();
             if(s.length() != 8){
-                Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода UID !", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this.getContext(), R.string.wc12, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
             kod = (int)Long.parseLong(s, 16);
         }catch(NumberFormatException e){
-            Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода" + e.toString() , Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this.getContext(), getString(R.string.wc13) + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -202,6 +201,7 @@ public class WriteClassicFragment extends Fragment {
         byte AB;
         String s;
         String StrKeyAB[] = {"Key A", "Key B"};
+        int i,j;
 
 
         public  WriteClassic(int n){
@@ -213,8 +213,8 @@ public class WriteClassicFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             TextWin.setText("");
-            pd.setTitle("Считывание UID");
-            pd.setMessage("Поднесите заготовку Classic\nк PN532");
+            pd.setTitle(getString(R.string.wc14));
+            pd.setMessage(getString(R.string.wc15));
             pd.show();
             pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
             pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
@@ -250,7 +250,7 @@ public class WriteClassicFragment extends Fragment {
                 uid  = keytools.uid;
 
                 publishProgress(1);                 //Поднесите PN532 к считывателю
-                for(int i = 0; i < keytools.nSniff; i++){   // Захват данных от считывателя
+                for(i = 0; i < keytools.nSniff; i++){   // Захват данных от считывателя
                     while(!keytools.getsniff(sPort,i)){
                         if (isCancelled()) {
                             return null;
@@ -268,12 +268,12 @@ public class WriteClassicFragment extends Fragment {
 
                 tagkod = kod[0];
                 long k1 = defkey;
-                for(int i = 0; i < Crk.length; i++){
+                for(i = 0; i < Crk.length; i++){
                     publishProgress(6,0);  // Поднесите заготовку
                     if(!waittag(uid)){      // Ожидание метки
                         return null;
                     }
-                    while( 0 != (err = writesector(k1 , Crk[i].key, tagkod))){    // Запись данных 0-го сектора
+                    while( 0 != (err = writesector(k1 , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
                         if (isCancelled()) {
                             return null;
                         }
@@ -301,13 +301,13 @@ public class WriteClassicFragment extends Fragment {
                                 if(!waittag(uid)){      // Ожидание метки
                                     return null;
                                 }
-                                while( 0 != (err = writesector(k1 , defkey, tagkod))){    // Запись данных 0-го сектора
+                                while( 0 != (err = writesector(k1 , defkey, tagkod, uid))){    // Запись данных 0-го сектора
                                     if (isCancelled()) {
                                         return null;
                                     }
                                     publishProgress(6,1);
                                 }
-                                return -8;
+                                return -2;
                             }
                     }
                 }
@@ -334,61 +334,63 @@ public class WriteClassicFragment extends Fragment {
                 case 0:
                     switch(values[1]){
                         case 1:
-                            Toast toast = Toast.makeText(getContext(), "Запись на эту метку невозможна!\n" +
-                                    "Поменяйте метку!", Toast.LENGTH_SHORT);
+                            Toast toast = Toast.makeText(getContext(), R.string.wc16, Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.CENTER, 0, 0);
                             toast.show();
                             break;
 
                         default:
                     }
-
-
-
                     break;
 
                 case 1:
-                    pd.setTitle(" Захват данных ");
-                    pd.setMessage("Поднесите PN532 к считывателю\n 1 - я попытка");
+                    pd.setTitle(getString(R.string.wc17));
+                    pd.setMessage(getString(R.string.wc18));
+                    pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
+                    pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
+                    pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
                     break;
 
                 case 2:
-                    s = String.format(Locale.US,"\n %d - я",values[1] + 1);
-                    pd.setMessage("Подождите - идет захват!" + s + " попытка");
+                    s = String.format(Locale.US,"%d - я",values[1] + 1);
+                    pd.setMessage(getString(R.string.wc19) + s + getString(R.string.wc20));
                     break;
 
                 case 3:
-                    pd.setTitle("Расчет ключей");
-                    pd.setMessage("Подождите ...");
+                    pd.setTitle(getString(R.string.wc21));
+                    pd.setMessage(getString(R.string.wc22));
+                    pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
+                    pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
+                    pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
                     break;
 
                 case 4:
-                    TextWin.setText("Результат расчета криптоключей :");
+                    TextWin.setText(R.string.wc23);
                     if(keytools.sn[0].filter != 0){
-                        TextWin.append("\nОбнаружен ФИЛЬТР ОТР !");
+                        TextWin.append(getString(R.string.wc24));
                     }
-                    s = String.format(Locale.US, "\nUID %08X\nНайдено ключей - %d :", keytools.uid, Crk.length);
+                    s = String.format(Locale.US, getString(R.string.wc25), keytools.uid, Crk.length);
                     TextWin.append(s);
                     for(int i = 0; i < Crk.length; i++){
-                        TextWin.append(String.format(Locale.US,"\nBlock %d   %s" +
-                                "\nKEY %d = %012X",Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key));
+                        TextWin.append(String.format(Locale.US,getString(R.string.wc37),
+                                Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key));
                     }
                     break;
 
                 case 5:
-                    Toast toast = Toast.makeText(getContext(), "UID не совпадает!\nПопробуйте другую заготовку!", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getContext(), R.string.wc26, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
 
                 case 6:
-                    pd.setTitle("Запись заготовки");
+                    pd.setTitle(getString(R.string.wc27));
                     switch(values[1]){
                         case 0:
-                            pd.setMessage("Поднесите заготовку\nMifare Classic к PN532");
+                            pd.setMessage(getString(R.string.wc28));
                             break;
                         case 1:
-                            pd.setMessage("Ошибка записи");
+                            pd.setMessage(getString(R.string.wc29));
                             break;
                     }
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
@@ -398,12 +400,12 @@ public class WriteClassicFragment extends Fragment {
                     break;
 
                 case 7:
-                    pd.setTitle("Проверка ");
-                    pd.setMessage("Проверьте записанную метку");
+                    pd.setTitle(getString(R.string.wc30));
+                    pd.setMessage(getString(R.string.wc31));
                     if(values[1] < Crk.length - 1){
-                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText("Еще");
+                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.wc32);
                     }else{
-                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText("Стереть");
+                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.wc33);
                     }
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
                     pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
@@ -420,52 +422,21 @@ public class WriteClassicFragment extends Fragment {
             super.onPostExecute(arg);
             switch(arg){
                 case 1:
-                    TextWin.append("\nЗапись успешно завершена.");
+                    s = String.format(Locale.US,getString(R.string.wc34),Crk[i].key);
+                    TextWin.append(s);
                     break;
 
                 case -1:
-                    TextWin.append("\nОшибка адаптера! Операция прервана");
+                    TextWin.append(getString(R.string.wc35));
                     break;
 
                 case -2:
-                    TextWin.append("\nОбнаружен ФИЛЬТР ОТР !\nЗапись на Classic невозможна!");
-                    break;
-
-                case -3:
-                    TextWin.append("\nОшибка расчета ключа! Попробуйте ещё разок.");
-                    break;
-
-                case -4:
-                    TextWin.append("\nНесколько Карт Объекта!\nЗапись на Classic невозможна!");
-                    break;
-
-                case -5:
-                    s = String.format(Locale.US,"\nНеудачная аутентификация \nBlock %d  %s " +
-                            "\nКриптоключ  %012X",block, StrKeyAB[AB], crkey);
+                    s = String.format(Locale.US,getString(R.string.wc36));
                     TextWin.append(s);
                     break;
 
-                case -6:
-                    TextWin.append("\nОшибка записи блока " + String.format(Locale.US,"%d",block));
+                default:
                     break;
-
-                case -7:
-                    s = String.format(Locale.US,"\nНеудачная верификация блока %d ключом %012X",block, crkey);
-                    TextWin.append(s);
-                    break;
-
-
-                case -8:
-                    s = String.format(Locale.US,"\nМетка стерта");
-                    TextWin.append(s);
-                    break;
-
-
-                case -9:
-                    s = String.format(Locale.US,"\nNeutral");
-                    TextWin.append(s);
-                    break;
-
             }
 
             keytools.Busy = false;
@@ -477,7 +448,7 @@ public class WriteClassicFragment extends Fragment {
         @Override
         protected void onCancelled(Integer arg) {
             super.onCancelled(arg);
-            TextWin.append("\nОперация прервана");
+            TextWin.append(getString(R.string.wc38));
             keytools.Busy = false;
             pd.dismiss();
         }
@@ -507,13 +478,19 @@ public class WriteClassicFragment extends Fragment {
         }
 
 
-        protected int writesector(long oldkey, long newkey, int kod) throws IOException{
+        protected int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
             byte block = 1;
             byte AB = 0;
             crkey = oldkey;
             if(!keytools.readuid(sPort)){
                 return -1;
             }
+            if (uid != keytools.uid) {
+                publishProgress(5);
+                while(keytools.readuid(sPort));
+                return -1;
+            }
+
             if(!keytools.authent(sPort, block, AB, oldkey)){
                 return -2;
             }
