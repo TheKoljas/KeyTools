@@ -353,4 +353,22 @@ public class KeyTools {
     }
 
 
+    public boolean unlock(UsbSerialPort sPort) throws IOException {
+
+        int lentgh = 3;
+        byte[] writebuffer = new byte[3];
+        writebuffer[0] = (byte) CMD;
+        writebuffer[1] = UNLOCK;
+        writebuffer[2] = 3;
+        sPort.write(writebuffer, 500);
+        if(!SerialRead(sPort,buffer,2000)){
+            return false;
+        }
+        if ((buffer[0] != (CMD + 1)) || (buffer[1] != (UNLOCK + 1)) || (buffer[2] != lentgh)) {
+            error = buffer[3];
+            return false;
+        }
+        return true;
+    }
+
 }

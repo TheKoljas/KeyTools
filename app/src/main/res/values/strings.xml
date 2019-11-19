@@ -9,7 +9,7 @@
 
     <string name="menu_home">Захват криптоключа</string>
     <string name="menu_gallery">Запись на Classic</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_cloneuid">Запись UID</string>
     <string name="menu_tools">Tools</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
@@ -54,6 +54,8 @@
     <string name="wc36">\nМетка стерта</string>
     <string name="wc37">\nBlock %d   %s \nKEY %d = %012X</string>
     <string name="wc38">\nОперация прервана</string>
+    <string name="wc39">Считывание UID</string>
+    <string name="wc40">Поднесите оригинал ключа</string>
 
     <string name="kg1">Захват данных ...</string>
     <string name="kg2">Рассчет ключей ...</string>
@@ -62,5 +64,6 @@
     <string name="kg5">\nОперация прервана</string>
     <string name="kg6">\nUID %08X \nНайдено ключей - %d :</string>
     <string name="kg7">\nBlock %d  %s \nKEY %d = %012X</string>
+
 
 </resources>

@@ -41,7 +41,7 @@ public class WriteClassicFragment extends Fragment {
     CheckBox uidCheckBox;
 
 
-    UID2 readuid;
+    UID readuid;
     WriteClassic writekey;
     Integer kod;
     protected volatile int smf;          // Семафор
@@ -65,7 +65,7 @@ public class WriteClassicFragment extends Fragment {
             public void onClick(View v) {
                 switch(v.getId()){
                     case R.id.btnReadUID2:
-                        ReadUID2(v);
+                        ReadUID(v);
 //                        Dial();
                         break;
                     case R.id.btnWrite:
@@ -121,12 +121,12 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-    public void ReadUID2(View view){
+    public void ReadUID(View view){
 
         if(KeyTools.Busy){
             return;
         }
-        readuid = new UID2();
+        readuid = new UID();
         if (!readuid.keytools.TestPort(sPort)) {
             Toast toast = Toast.makeText(this.getContext(), readuid.keytools.ErrMsg , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
@@ -532,18 +532,18 @@ public class WriteClassicFragment extends Fragment {
 
 
 
-    class UID2 extends AsyncTask<Void, Void, Void> {
+    class UID extends AsyncTask<Void, Void, Void> {
         KeyTools keytools;
 
-        protected UID2(){
+        protected UID(){
             keytools = new KeyTools(1);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setTitle("Считывание UID");
-            pd.setMessage("Поднесите оригинал ключа");
+            pd.setTitle(getString(R.string.wc39));
+            pd.setMessage(getString(R.string.wc40));
             pd.show();
             pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
             pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
@@ -582,7 +582,7 @@ public class WriteClassicFragment extends Fragment {
 
         protected void onCancelled() {
             super.onCancelled();
-            TextWin.append("\nОперация прервана");
+            TextWin.append(getString(R.string.wc38));
             keytools.Busy = false;
             pd.dismiss();
         }

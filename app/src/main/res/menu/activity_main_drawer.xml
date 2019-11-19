@@ -10,10 +10,9 @@
         <item
             android:id="@+id/nav_writeclassic"
             android:title="@string/menu_gallery" />
-<!--        <item-->
-<!--            android:id="@+id/nav_slideshow"-->
-<!--            android:icon="@drawable/ic_menu_slideshow"-->
-<!--            android:title="@string/menu_slideshow" />-->
+        <item
+            android:id="@+id/nav_cloneuid"
+            android:title="@string/menu_cloneuid" />
 <!--        <item-->
 <!--            android:id="@+id/nav_tools"-->
 <!--            android:icon="@drawable/ic_menu_manage"-->
