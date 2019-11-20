@@ -10,7 +10,7 @@
     <string name="menu_home">Захват криптоключа</string>
     <string name="menu_gallery">Запись на Classic</string>
     <string name="menu_cloneuid">Запись UID</string>
-    <string name="menu_tools">Tools</string>
+    <string name="menu_sectorcopy">Копирование сектора</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
 

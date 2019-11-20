@@ -58,7 +58,7 @@ public class KeyGrabFragment extends Fragment {
         TextBar = root.findViewById(R.id.TextBar);
 
         TextEdit = (EditText) root.findViewById(R.id.EditUID);
-        TextEdit.setText("1234ABCD");
+//        TextEdit.setText("1234ABCD");
         NumSniff = (EditText) root.findViewById(R.id.NumSniff);
 
         View.OnClickListener oclBtn = new View.OnClickListener() {

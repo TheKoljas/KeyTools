@@ -13,10 +13,9 @@
         <item
             android:id="@+id/nav_cloneuid"
             android:title="@string/menu_cloneuid" />
-<!--        <item-->
-<!--            android:id="@+id/nav_tools"-->
-<!--            android:icon="@drawable/ic_menu_manage"-->
-<!--            android:title="@string/menu_tools" />-->
+        <item
+            android:id="@+id/nav_sectorcopy"
+            android:title="@string/menu_sectorcopy" />
     </group>
 
 <!--    <item android:title="Communicate">-->

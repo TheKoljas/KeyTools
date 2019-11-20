@@ -51,7 +51,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"
-            android:hint="1234ABEF"
+            android:hint="1234ABCD"
+            android:text="1234ABCD"
             android:inputType="textCapCharacters"
             android:digits="0123456789ABCDEF"
             android:singleLine="true"
@@ -137,5 +138,3 @@
         android:textSize="24sp" />
 
 </LinearLayout>
-
-    <!--android:textIsSelectable="true"-->

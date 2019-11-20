@@ -19,15 +19,15 @@
 
     <fragment
         android:id="@+id/nav_cloneuid"
-        android:name="com.example.keytools.ui.slideshow.CloneUIDFragment"
+        android:name="com.example.keytools.ui.cloneuid.CloneUIDFragment"
         android:label="@string/menu_cloneuid"
         tools:layout="@layout/fragment_cloneuid" />
 
     <fragment
-        android:id="@+id/nav_tools"
-        android:name="com.example.keytools.ui.tools.ToolsFragment"
-        android:label="@string/menu_tools"
-        tools:layout="@layout/fragment_tools" />
+        android:id="@+id/nav_sectorcopy"
+        android:name="com.example.keytools.ui.sectorcopy.SectorCopyFragment"
+        android:label="@string/menu_sectorcopy"
+        tools:layout="@layout/fragment_sectorcopy" />
 
     <fragment
         android:id="@+id/nav_share"

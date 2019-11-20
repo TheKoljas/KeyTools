@@ -1,4 +1,4 @@
-package com.example.keytools.ui.slideshow;
+package com.example.keytools.ui.cloneuid;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -15,18 +15,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
-import com.example.keytools.ui.writeclassic.WriteClassicFragment;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import static com.example.keytools.MainActivity.sPort;
 
@@ -36,11 +31,13 @@ public class CloneUIDFragment extends Fragment {
     private EditText TextUID;
     Button btnReadUID;
     Button btnCloneUID;
+    Button btnUnbrick;
     ProgressDialog pd;
 
 
     UID  readuid;
     WriteUID writeuid;
+    UNBRICK unbrick;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -63,13 +60,18 @@ public class CloneUIDFragment extends Fragment {
                     case R.id.btnCloneUID:
                         WriteUID(v);
                         break;
+                    case R.id.btnUnbrick:
+                        Unbrick(v);
+                        break;
                 }
             }
         };
         btnReadUID = root.findViewById(R.id.btnReadUID);
         btnCloneUID = root.findViewById(R.id.btnCloneUID);
+        btnUnbrick = root.findViewById(R.id.btnUnbrick);
         btnReadUID.setOnClickListener(oclBtn);
         btnCloneUID.setOnClickListener(oclBtn);
+        btnUnbrick.setOnClickListener(oclBtn);
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
@@ -99,7 +101,6 @@ public class CloneUIDFragment extends Fragment {
         readuid.execute();
         KeyTools.Busy = true;
     }
-
 
 
     void WriteUID(View v){
@@ -146,6 +147,132 @@ public class CloneUIDFragment extends Fragment {
         if (writeuid != null) {
             writeuid.cancel(true);
         }
+        if(unbrick != null){
+            unbrick.cancel(true);
+        }
+    }
+
+
+    void Unbrick(View v){
+
+        if(KeyTools.Busy){
+            return;
+        }
+        unbrick = new UNBRICK();
+        if (!unbrick.keytools.TestPort(sPort)) {
+            Toast toast = Toast.makeText(this.getContext(), unbrick.keytools.ErrMsg , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return;
+        }
+        unbrick.execute();
+        KeyTools.Busy = true;
+    }
+
+
+    class UNBRICK extends AsyncTask<Void, Integer, Integer> {
+        KeyTools keytools;
+        byte block = 0;
+        byte[] blockbuffer = {0x21, (byte)0xCA, (byte)0xC3, 0x39, 0x11, 0x08, 0x04, 0x00,
+                                    0x01, 0x4A, 0x73, 0x48, (byte)0xE7, 0x5E, 0x26, 0x1D};
+
+
+        protected UNBRICK(){
+            keytools = new KeyTools(1);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd.setTitle("Восстановление ZERO");
+            pd.setMessage("Поднесите метку");
+            pd.show();
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            try{
+                while(true){
+                    if (isCancelled()) {
+                        return null;
+                    }
+                    if(keytools.readuid(sPort)){
+                        return 1;
+                    }
+                    if(!keytools.unlock(sPort)){
+                        continue;
+                    }
+                    if(keytools.readuid(sPort)){
+                        return 1;
+                    }
+                    if(!keytools.unlock(sPort)){
+                        continue;
+                    }
+                    if(!keytools.writeblock(sPort, block, blockbuffer)) {
+                        publishProgress(1);
+                        continue;
+                    }
+                        if (keytools.readuid(sPort)){
+                            return 2;
+                        }
+                    }
+            }catch(IOException e1){
+                this.cancel(true);
+                try{
+                    sPort.close();
+                }catch(IOException e){
+                }
+                sPort = null;
+                return null;
+            }
+        }
+
+
+        protected void onProgressUpdate(Integer... values) {
+            Toast toast;
+            super.onProgressUpdate(values);
+            switch (values[0]) {
+                case 1:
+                    pd.setMessage("Ошибка записи блока");
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(Integer values) {
+            super.onPostExecute(values);
+            Toast toast;
+            switch(values){
+                case 1:
+                    toast = Toast.makeText(getContext(), "Метка не требует восстановления", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\nМетка не требует восстановления");
+                    break;
+                case 2:
+                    toast = Toast.makeText(getContext(), "Метка восстановлена", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\nМетка восстановлена");
+                    break;
+            }
+            keytools.Busy = false;
+            pd.dismiss();
+        }
+
+        protected void onCancelled() {
+            super.onCancelled();
+            Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            TextWin.setText("\nОперация прервана");
+            keytools.Busy = false;
+            pd.dismiss();
+        }
     }
 
 
@@ -165,7 +292,6 @@ public class CloneUIDFragment extends Fragment {
             pd.setTitle("Запись UID");
             pd.setMessage("Поднесите метку");
             pd.show();
-//            pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
         }
 
         protected Integer doInBackground(Integer... uid) {
@@ -292,7 +418,6 @@ public class CloneUIDFragment extends Fragment {
             pd.dismiss();
         }
     }
-
 
 
     class UID extends AsyncTask<Void, Void, Void> {
