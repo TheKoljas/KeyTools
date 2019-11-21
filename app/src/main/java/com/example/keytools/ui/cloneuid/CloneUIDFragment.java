@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
+import com.example.usbserial.util.HexDump;
 
 import java.io.IOException;
 
@@ -75,7 +76,7 @@ public class CloneUIDFragment extends Fragment {
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
-        pd.setButton(Dialog.BUTTON_NEGATIVE, getString(R.string.wc6), new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_NEGATIVE, getString(R.string.Отмена), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 Cancel();
             }
@@ -85,7 +86,7 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
-    public void ReadUID(View view){
+    void ReadUID(View view){
 
         if(KeyTools.Busy){
             return;
@@ -115,14 +116,14 @@ public class CloneUIDFragment extends Fragment {
             writeuid = new WriteUID();
             String s = TextUID.getText().toString();
             if(s.length() != 8){
-                Toast toast = Toast.makeText(this.getContext(), R.string.wc12, Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_UID, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
             uid = (int)Long.parseLong(s, 16);
         }catch(NumberFormatException e){
-            Toast toast = Toast.makeText(this.getContext(), getString(R.string.wc13) + e.toString() , Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -228,6 +229,7 @@ public class CloneUIDFragment extends Fragment {
         }
 
 
+        @Override
         protected void onProgressUpdate(Integer... values) {
             Toast toast;
             super.onProgressUpdate(values);
@@ -264,6 +266,7 @@ public class CloneUIDFragment extends Fragment {
             pd.dismiss();
         }
 
+        @Override
         protected void onCancelled() {
             super.onCancelled();
             Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
@@ -294,6 +297,7 @@ public class CloneUIDFragment extends Fragment {
             pd.show();
         }
 
+        @Override
         protected Integer doInBackground(Integer... uid) {
 
             try{
@@ -357,12 +361,13 @@ public class CloneUIDFragment extends Fragment {
             return 1;
         }
 
+        @Override
         protected void onProgressUpdate(Integer... values) {
             Toast toast;
             super.onProgressUpdate(values);
             switch (values[0]) {
                 case 1:
-                    toast = Toast.makeText(getContext(), R.string.wc16, Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
@@ -381,6 +386,7 @@ public class CloneUIDFragment extends Fragment {
             }
         }
 
+        @Override
         protected void onPostExecute(Integer values) {
             Toast toast;
             super.onPostExecute(values);
@@ -408,6 +414,7 @@ public class CloneUIDFragment extends Fragment {
             pd.dismiss();
         }
 
+        @Override
         protected void onCancelled() {
             super.onCancelled();
             Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
@@ -462,12 +469,13 @@ public class CloneUIDFragment extends Fragment {
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             TextWin.setText("\nUID оригинала считан");
-            String s = String.format("%X", keytools.uid);
+            String s = String.format("%08X", keytools.uid);
             TextUID.setText(s);
             keytools.Busy = false;
             pd.dismiss();
         }
 
+        @Override
         protected void onCancelled() {
             super.onCancelled();
             Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
@@ -478,4 +486,6 @@ public class CloneUIDFragment extends Fragment {
             pd.dismiss();
         }
     }
+
+
 }

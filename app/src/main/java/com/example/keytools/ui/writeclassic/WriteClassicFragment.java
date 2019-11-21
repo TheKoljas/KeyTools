@@ -11,8 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,93 +33,73 @@ public class WriteClassicFragment extends Fragment {
     private TextView TextWin;
     private EditText TextEdit;
     private EditText NumSniff;
-    Button btnReadUID2;
-    Button btnWrite;
-    ProgressDialog pd;
-    CheckBox uidCheckBox;
+    private ProgressDialog pd;
 
 
-    UID readuid;
-    WriteClassic writekey;
-    Integer kod;
-    protected volatile int smf;          // Семафор
+    private UID readuid;
+    private WriteClassic writekey;
+    private  volatile int smf;          // Семафор
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         final View root = inflater.inflate(R.layout.fragment_writeclassic, container, false);
 
-        TextWin = (TextView)root.findViewById(R.id.textWin);
+        TextWin = root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 
-        TextEdit = (EditText) root.findViewById(R.id.TextBar);
-        TextEdit.setText(R.string.wc5);
+        TextEdit = root.findViewById(R.id.TextBar);
+        TextEdit.setText(R.string.ABCD1234);
 
-        NumSniff = (EditText) root.findViewById(R.id.NumSniff2);
+        NumSniff = root.findViewById(R.id.NumSniff2);
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch(v.getId()){
                     case R.id.btnReadUID2:
-                        ReadUID(v);
-//                        Dial();
+                        ReadUID();
                         break;
                     case R.id.btnWrite:
-                        WriteKey(v);
-//                        Dial1();
+                        WriteKey();
                         break;
                 }
             }
         };
 
-        btnReadUID2 = (Button)root.findViewById(R.id.btnReadUID2);
-        btnWrite = (Button)root.findViewById(R.id.btnWrite);
+        Button btnReadUID2 = root.findViewById(R.id.btnReadUID2);
+        Button btnWrite = root.findViewById(R.id.btnWrite);
         btnReadUID2.setOnClickListener(oclBtn);
         btnWrite.setOnClickListener(oclBtn);
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
-        pd.setButton(Dialog.BUTTON_NEGATIVE, getString(R.string.wc6), new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_NEGATIVE, getString(R.string.Отмена), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 Cancel();
             }
         });
 
-        pd.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.wc7), new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.OK), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 smf = 1;
             }
         });
-        pd.setButton(Dialog.BUTTON_NEUTRAL, getString(R.string.wc32), new DialogInterface.OnClickListener() {
+        pd.setButton(Dialog.BUTTON_NEUTRAL, getString(R.string.Еще), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which)
             {
                 smf = 2;
             }
         });
-        pd.setTitle(getString(R.string.wc9));
-        pd.setMessage(getString(R.string.wc10));
+        pd.setTitle(getString(R.string.Захват_данных_от_считывателя));
+        pd.setMessage(getString(R.string.Поднесите_устройство_к_считывателю));
 
         return root;
     }
 
 
-    void Dial() {
-        pd.setTitle("Захват данных от считывателя");
-        pd.setMessage("Поднесите PN532 к считывателю");
-        pd.show();
-    }
-
-
-    void Dial1() {
-        pd.setTitle("Dial1");
-        pd.setMessage("Поднесите PN532 к считывателю");
-        pd.show();
-    }
-
-
-    public void ReadUID(View view){
+    private void ReadUID(){
 
         if(KeyTools.Busy){
             return;
@@ -139,16 +117,17 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-    void WriteKey(View v){
+    private void WriteKey(){
 
         if(KeyTools.Busy){
             return;
         }
 
+        Integer kod;
         try {
             int nSniff = Integer.parseInt(NumSniff.getText().toString());
             if(nSniff < 2){
-                Toast toast = Toast.makeText(this.getContext(), R.string.wc11, Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
@@ -156,14 +135,14 @@ public class WriteClassicFragment extends Fragment {
             writekey = new WriteClassic(nSniff);
             String s = TextEdit.getText().toString();
             if(s.length() != 8){
-                Toast toast = Toast.makeText(this.getContext(), R.string.wc12, Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_UID, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
             kod = (int)Long.parseLong(s, 16);
         }catch(NumberFormatException e){
-            Toast toast = Toast.makeText(this.getContext(), getString(R.string.wc13) + e.toString() , Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -181,7 +160,7 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-    void Cancel(){
+    private void Cancel(){
         if (readuid != null) {
             readuid.cancel(true);
         }
@@ -191,7 +170,7 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-    class WriteClassic extends AsyncTask<Integer, Integer, Integer> {
+    private class WriteClassic extends AsyncTask<Integer, Integer, Integer> {
 
         KeyTools keytools;
         KeyTools.CryptoKey[] Crk;
@@ -200,11 +179,11 @@ public class WriteClassicFragment extends Fragment {
         byte block = 1;
         byte AB;
         String s;
-        String StrKeyAB[] = {"Key A", "Key B"};
-        int i,j;
+        String[] StrKeyAB = {"Key A", "Key B"};
+        int i;
 
 
-        public  WriteClassic(int n){
+        WriteClassic(int n){
             keytools = new KeyTools(n);
         }
 
@@ -213,8 +192,8 @@ public class WriteClassicFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             TextWin.setText("");
-            pd.setTitle(getString(R.string.wc14));
-            pd.setMessage(getString(R.string.wc15));
+            pd.setTitle(getString(R.string.Считывание_UID));
+            pd.setMessage(getString(R.string.Поднесите_заготовку_Classic_к_устройству));
             pd.show();
             pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
             pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
@@ -334,7 +313,7 @@ public class WriteClassicFragment extends Fragment {
                 case 0:
                     switch(values[1]){
                         case 1:
-                            Toast toast = Toast.makeText(getContext(), R.string.wc16, Toast.LENGTH_SHORT);
+                            Toast toast = Toast.makeText(getContext(), R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.CENTER, 0, 0);
                             toast.show();
                             break;
@@ -344,8 +323,8 @@ public class WriteClassicFragment extends Fragment {
                     break;
 
                 case 1:
-                    pd.setTitle(getString(R.string.wc17));
-                    pd.setMessage(getString(R.string.wc18));
+                    pd.setTitle(getString(R.string.Захват_данных));
+                    pd.setMessage(getString(R.string.Поднесите_устройство_к_считывателю_1_я_попытка));
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
                     pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
                     pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
@@ -353,44 +332,44 @@ public class WriteClassicFragment extends Fragment {
 
                 case 2:
                     s = String.format(Locale.US,"%d - я",values[1] + 1);
-                    pd.setMessage(getString(R.string.wc19) + s + getString(R.string.wc20));
+                    pd.setMessage(getString(R.string.Подождите_идет_захват) + s + getString(R.string.попытка));
                     break;
 
                 case 3:
-                    pd.setTitle(getString(R.string.wc21));
-                    pd.setMessage(getString(R.string.wc22));
+                    pd.setTitle(getString(R.string.Расчет_ключей));
+                    pd.setMessage(getString(R.string.Подождите));
                     pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
                     pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
                     break;
 
                 case 4:
-                    TextWin.setText(R.string.wc23);
+                    TextWin.setText(R.string.Результат_расчета_криптоключей);
                     if(keytools.sn[0].filter != 0){
-                        TextWin.append(getString(R.string.wc24));
+                        TextWin.append(getString(R.string.Обнаружен_ФИЛЬТР_ОТР));
                     }
-                    s = String.format(Locale.US, getString(R.string.wc25), keytools.uid, Crk.length);
+                    s = String.format(Locale.US, getString(R.string.UID_Найдено_ключей), keytools.uid, Crk.length);
                     TextWin.append(s);
                     for(int i = 0; i < Crk.length; i++){
-                        TextWin.append(String.format(Locale.US,getString(R.string.wc37),
+                        TextWin.append(String.format(Locale.US,getString(R.string.Block_KEY),
                                 Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key));
                     }
                     break;
 
                 case 5:
-                    Toast toast = Toast.makeText(getContext(), R.string.wc26, Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getContext(), R.string.UID_не_совпадает_Попробуйте_другую_заготовку, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
 
                 case 6:
-                    pd.setTitle(getString(R.string.wc27));
+                    pd.setTitle(getString(R.string.Запись_заготовки));
                     switch(values[1]){
                         case 0:
-                            pd.setMessage(getString(R.string.wc28));
+                            pd.setMessage(getString(R.string.Поднесите_заготовку_Mifare_Classic_к_устройству));
                             break;
                         case 1:
-                            pd.setMessage(getString(R.string.wc29));
+                            pd.setMessage(getString(R.string.Ошибка_записи));
                             break;
                     }
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
@@ -400,12 +379,12 @@ public class WriteClassicFragment extends Fragment {
                     break;
 
                 case 7:
-                    pd.setTitle(getString(R.string.wc30));
-                    pd.setMessage(getString(R.string.wc31));
+                    pd.setTitle(getString(R.string.Проверка));
+                    pd.setMessage(getString(R.string.Проверьте_записанную_метку));
                     if(values[1] < Crk.length - 1){
-                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.wc32);
+                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.Еще);
                     }else{
-                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.wc33);
+                        pd.getButton(Dialog.BUTTON_NEUTRAL).setText(R.string.Стереть);
                     }
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
                     pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.VISIBLE);
@@ -422,16 +401,16 @@ public class WriteClassicFragment extends Fragment {
             super.onPostExecute(arg);
             switch(arg){
                 case 1:
-                    s = String.format(Locale.US,getString(R.string.wc34),Crk[i].key);
+                    s = String.format(Locale.US,getString(R.string.Запись_успешно_завершена_KEY),Crk[i].key);
                     TextWin.append(s);
                     break;
 
                 case -1:
-                    TextWin.append(getString(R.string.wc35));
+                    TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
                     break;
 
                 case -2:
-                    s = String.format(Locale.US,getString(R.string.wc36));
+                    s = String.format(Locale.US,getString(R.string.Метка_стерта));
                     TextWin.append(s);
                     break;
 
@@ -448,7 +427,7 @@ public class WriteClassicFragment extends Fragment {
         @Override
         protected void onCancelled(Integer arg) {
             super.onCancelled(arg);
-            TextWin.append(getString(R.string.wc38));
+            TextWin.append(getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }
@@ -542,8 +521,8 @@ public class WriteClassicFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setTitle(getString(R.string.wc39));
-            pd.setMessage(getString(R.string.wc40));
+            pd.setTitle(getString(R.string.Считывание_UID));
+            pd.setMessage(getString(R.string.Поднесите_оригинал_ключа));
             pd.show();
             pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
             pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
@@ -574,15 +553,17 @@ public class WriteClassicFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             TextWin.append("\nUID оригинала считан");
-            String s = String.format("%X", keytools.uid);
+            String s = String.format("%08X", keytools.uid);
             TextEdit.setText(s);
             keytools.Busy = false;
             pd.dismiss();
         }
 
+
+        @Override
         protected void onCancelled() {
             super.onCancelled();
-            TextWin.append(getString(R.string.wc38));
+            TextWin.append(getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }

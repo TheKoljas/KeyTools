@@ -160,9 +160,10 @@ public class KeyGrabFragment extends Fragment {
             keytools = new KeyTools(n);
         }
 
+        @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            TextBar.setText(R.string.kg1);
+            TextBar.setText(R.string.Захват_данных + " ...");
             TextWin.setText("");
             progressBar.setIndeterminate(true);
             progressBar.setProgress(0);
@@ -173,6 +174,7 @@ public class KeyGrabFragment extends Fragment {
             btnKeyGrab.setEnabled(false);
         }
 
+        @Override
         protected Void doInBackground(Void... voids) {
             try{
                 for(int i = 0; i < keytools.nSniff; i++){
@@ -200,11 +202,12 @@ public class KeyGrabFragment extends Fragment {
         }
 
 
+        @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
             switch(values[0]){
                 case -1:
-                    TextBar.setText(R.string.kg2);
+                    TextBar.setText(R.string.Расчет_ключей + " ...");
                     progressBar.setIndeterminate(true);
                     btnCancel.setEnabled(false);
 
@@ -223,19 +226,20 @@ public class KeyGrabFragment extends Fragment {
             }
         }
 
+        @Override
         protected void onPostExecute(Void aVoid) {
             String s;
             String StrKeyAB[] = {"Key A", "Key B"};
             super.onPostExecute(aVoid);
-            TextBar.setText(R.string.kg3);
+            TextBar.setText(R.string.Рассчет_окончен);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             if(keytools.sn[0].filter != 0){
-                TextWin.append(getString(R.string.kg4));
+                TextWin.append(getString(R.string.Обнаружен_ФИЛЬТР_ОТР));
             }
-            s = String.format(getString(R.string.kg6), keytools.uid, Crk.length);
+            s = String.format(getString(R.string.UID_Найдено_ключей), keytools.uid, Crk.length);
             TextWin.append(s);
             for(int i = 0; i < Crk.length; i++){
-                s = String.format(getString(R.string.kg7), Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key);
+                s = String.format(getString(R.string.Block_KEY), Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key);
                 TextWin.append(s);
             }
             keytools.Busy = false;
@@ -246,9 +250,10 @@ public class KeyGrabFragment extends Fragment {
             btnKeyGrab.setEnabled(true);
         }
 
+        @Override
         protected void onCancelled() {
             super.onCancelled();
-            TextBar.setText(R.string.kg5);
+            TextBar.setText(R.string.Операция_прервана);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
@@ -265,6 +270,7 @@ public class KeyGrabFragment extends Fragment {
         public UID(){
             keytools = new KeyTools(1);
         }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -301,7 +307,7 @@ public class KeyGrabFragment extends Fragment {
             super.onPostExecute(aVoid);
             TextBar.setText("UID считан");
             progressBar.setVisibility(ProgressBar.INVISIBLE);
-            String s = String.format("%X", keytools.uid);
+            String s = String.format("%08X", keytools.uid);
             TextEdit.setText(s);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
@@ -310,6 +316,7 @@ public class KeyGrabFragment extends Fragment {
             btnKeyGrab.setEnabled(true);
         }
 
+        @Override
         protected void onCancelled() {
             super.onCancelled();
             TextBar.setText("Операция прервана");

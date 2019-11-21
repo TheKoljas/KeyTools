@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/wc1"
+            android:text="@string/Код"
             android:textSize="24sp" />
 
         <EditText
@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"
-            android:hint="@string/wc5"
+            android:hint="@string/ABCD1234"
             android:inputType="textCapCharacters"
             android:digits="0123456789ABCDEF"
             android:singleLine="true"
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/wc2" />
+            android:text="@string/Считать_с_оригинала" />
 
     </LinearLayout>
 
@@ -58,7 +58,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/wc3"
+            android:text="@string/Число_захватов"
             android:textSize="24sp"/>
 
         <EditText
@@ -84,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/wc4" />
+            android:text="@string/Записать_копию_на_Classic" />
 
     </LinearLayout>
 

@@ -17,6 +17,10 @@ public class KeyTools {
     final static byte WRITEBLOCK = 0x0C;
     final static byte UNLOCK = 0x0E;
 
+    private final static char[] HEX_DIGITS = {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
     public static boolean Busy;                        // Семафор занятости
 
     byte[] buffer = new byte[128];
@@ -111,7 +115,22 @@ public class KeyTools {
     }
 
 
-    public int ByteArrayToInt(byte b[], int n) {
+    public static String BlockToString(byte[] block){
+        StringBuilder result = new StringBuilder();
+        byte b;
+
+        for(int i = 0; i < 16; i++){
+            b = block[i];
+            result.append(" ");
+            result.append(HEX_DIGITS[(b >>> 4) & 0x0F]);
+            result.append(HEX_DIGITS[b & 0x0F]);
+
+        }
+        return result.toString();
+    }
+
+
+    public static int ByteArrayToInt(byte b[], int n) {
         int s = 0;
         s = 0xFF & b[n + 3];
         s <<= 8;
@@ -124,7 +143,7 @@ public class KeyTools {
     }
 
 
-    public void IntToByteArray(int d, byte[] b, int n){
+    public static void IntToByteArray(int d, byte[] b, int n){
         b[n + 3] = (byte)(d & 0xFF);
         d >>>= 8;
         b[n + 2] = (byte)(d & 0xFF);
@@ -135,18 +154,34 @@ public class KeyTools {
     }
 
 
-    public void KeyToByteArray(long autent_key, byte[] writebuffer, int offset){
-        writebuffer[offset + 5] = (byte)(0xFF & autent_key);
-        autent_key >>>= 8;
-        writebuffer[offset + 4] = (byte)(0xFF & autent_key);
-        autent_key >>>= 8;
-        writebuffer[offset + 3] = (byte)(0xFF & autent_key);
-        autent_key >>>= 8;
-        writebuffer[offset + 2] = (byte)(0xFF & autent_key);
-        autent_key >>>= 8;
-        writebuffer[offset + 1] = (byte)(0xFF & autent_key);
-        autent_key >>>= 8;
-        writebuffer[offset] = (byte)(0xFF & autent_key);
+    public static void KeyToByteArray(long key, byte[] buf, int offset){
+        buf[offset + 5] = (byte)(0xFF & key);
+        key >>>= 8;
+        buf[offset + 4] = (byte)(0xFF & key);
+        key >>>= 8;
+        buf[offset + 3] = (byte)(0xFF & key);
+        key >>>= 8;
+        buf[offset + 2] = (byte)(0xFF & key);
+        key >>>= 8;
+        buf[offset + 1] = (byte)(0xFF & key);
+        key >>>= 8;
+        buf[offset] = (byte)(0xFF & key);
+    }
+
+    public static long ByteArrayToKey(byte[] b, int offset){
+        long key = 0;
+        key |= 0xFFL & b[offset];
+        key <<= 8;
+        key |= 0xFFL & b[offset + 1];
+        key <<= 8;
+        key |= 0xFFL & b[offset + 2];
+        key <<= 8;
+        key |= 0xFFL & b[offset + 3];
+        key <<= 8;
+        key |= 0xFFL & b[offset + 4];
+        key <<= 8;
+        key |= 0xFFL & b[offset + 5];
+        return key;
     }
 
 
