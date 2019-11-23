@@ -37,7 +37,7 @@ public class KeyGrabFragment extends Fragment {
     Button btnReadUID;
     Button btnKeyGrab;
     Button btnCancel;
-
+    String s;
 
     UID  readuid;
     KEY sniffkey;
@@ -163,7 +163,7 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            TextBar.setText(R.string.Захват_данных + " ...");
+            TextBar.setText(getString(R.string.Захват_данных ) + " ...");
             TextWin.setText("");
             progressBar.setIndeterminate(true);
             progressBar.setProgress(0);
@@ -207,10 +207,9 @@ public class KeyGrabFragment extends Fragment {
             super.onProgressUpdate(values);
             switch(values[0]){
                 case -1:
-                    TextBar.setText(R.string.Расчет_ключей + " ...");
+                    TextBar.setText(getString(R.string.Расчет_ключей) + " ...");
                     progressBar.setIndeterminate(true);
                     btnCancel.setEnabled(false);
-
                     break;
 
                 case -2:

@@ -31,10 +31,10 @@ import static com.example.keytools.MainActivity.sPort;
 public class WriteClassicFragment extends Fragment {
 
     private TextView TextWin;
-    private EditText TextEdit;
+    private EditText TextUID;
     private EditText NumSniff;
     private ProgressDialog pd;
-
+    Toast toast;
 
     private UID readuid;
     private WriteClassic writekey;
@@ -49,8 +49,8 @@ public class WriteClassicFragment extends Fragment {
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 
-        TextEdit = root.findViewById(R.id.TextBar);
-        TextEdit.setText(R.string.ABCD1234);
+        TextUID = root.findViewById(R.id.TextBar);
+        TextUID.setText(R.string.ABCD1234);
 
         NumSniff = root.findViewById(R.id.NumSniff2);
 
@@ -106,7 +106,7 @@ public class WriteClassicFragment extends Fragment {
         }
         readuid = new UID();
         if (!readuid.keytools.TestPort(sPort)) {
-            Toast toast = Toast.makeText(this.getContext(), readuid.keytools.ErrMsg , Toast.LENGTH_LONG);
+            toast = Toast.makeText(this.getContext(), readuid.keytools.ErrMsg , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -127,29 +127,29 @@ public class WriteClassicFragment extends Fragment {
         try {
             int nSniff = Integer.parseInt(NumSniff.getText().toString());
             if(nSniff < 2){
-                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
+                toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
             writekey = new WriteClassic(nSniff);
-            String s = TextEdit.getText().toString();
+            String s = TextUID.getText().toString();
             if(s.length() != 8){
-                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_UID, Toast.LENGTH_LONG);
+                toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_UID, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
             kod = (int)Long.parseLong(s, 16);
         }catch(NumberFormatException e){
-            Toast toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
+            toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
         }
 
         if (!writekey.keytools.TestPort(sPort)) {
-            Toast toast = Toast.makeText(this.getContext(), writekey.keytools.ErrMsg , Toast.LENGTH_LONG);
+            toast = Toast.makeText(this.getContext(), writekey.keytools.ErrMsg , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -218,7 +218,7 @@ public class WriteClassicFragment extends Fragment {
                     if(keytools.authent(sPort,block, AB, defkey)){
                         break;
                     }
-                    publishProgress(0, 1);
+                    publishProgress(0);
                     while(keytools.readuid(sPort)){        // Ждем когда уберут метку
                         if (isCancelled()) {
                             return null;
@@ -235,7 +235,9 @@ public class WriteClassicFragment extends Fragment {
                             return null;
                         }
                     }
-                    publishProgress(2, (i + 1) );   //Подождите - идет захват!
+                    if(i < keytools.nSniff - 1){
+                        publishProgress(2, (i + 1) );   //Подождите - идет захват!
+                    }
                 }
 
                 publishProgress(3);     //Расчет ключей  Подождите ...
@@ -246,13 +248,13 @@ public class WriteClassicFragment extends Fragment {
                 publishProgress(4);
 
                 tagkod = kod[0];
-                long k1 = defkey;
+                crkey = defkey;
                 for(i = 0; i < Crk.length; i++){
                     publishProgress(6,0);  // Поднесите заготовку
                     if(!waittag(uid)){      // Ожидание метки
                         return null;
                     }
-                    while( 0 != (err = writesector(k1 , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
+                    while( 0 != (err = writesector(crkey , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
                         if (isCancelled()) {
                             return null;
                         }
@@ -266,21 +268,19 @@ public class WriteClassicFragment extends Fragment {
                             return null;
                         }
                     }
-                    k1 = Crk[i].key;
+                    crkey = Crk[i].key;
                     switch(smf){
                         case 1:             // ОК
                             return 1;
 
-                        case 2:
-                            if(i < (Crk.length - 1)){      // Следующий
-                                continue;
-                            }else{                          // Стереть
+                        case 2:             // Стереть или Ещё
+                            if(i == (Crk.length - 1)){      // Если ключ был последний, то стереть и выйти
                                 tagkod = 0;
                                 publishProgress(6,0);  // Поднесите заготовку
                                 if(!waittag(uid)){      // Ожидание метки
                                     return null;
                                 }
-                                while( 0 != (err = writesector(k1 , defkey, tagkod, uid))){    // Запись данных 0-го сектора
+                                while( 0 != (err = writesector(crkey , defkey, tagkod, uid))){    // Запись данных 0-го сектора
                                     if (isCancelled()) {
                                         return null;
                                     }
@@ -290,8 +290,8 @@ public class WriteClassicFragment extends Fragment {
                             }
                     }
                 }
+                i--;
             }catch(IOException e1){
-                //this.cancel(true);
                 try{
                     sPort.close();
                 }catch(IOException e){
@@ -311,15 +311,9 @@ public class WriteClassicFragment extends Fragment {
             switch(values[0]){
 
                 case 0:
-                    switch(values[1]){
-                        case 1:
-                            Toast toast = Toast.makeText(getContext(), R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-                            break;
-
-                        default:
-                    }
+                    toast = Toast.makeText(getContext(), R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     break;
 
                 case 1:
@@ -357,7 +351,7 @@ public class WriteClassicFragment extends Fragment {
                     break;
 
                 case 5:
-                    Toast toast = Toast.makeText(getContext(), R.string.UID_не_совпадает_Попробуйте_другую_заготовку, Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.UID_не_совпадает_Попробуйте_другую_заготовку, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
@@ -407,6 +401,10 @@ public class WriteClassicFragment extends Fragment {
 
                 case -1:
                     TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    TextWin.append("\n" + "Ошибка адаптера! Операция прервана!");
+                    toast = Toast.makeText(getContext(), "Ошибка адаптера! Операция прервана!", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     break;
 
                 case -2:
@@ -493,8 +491,8 @@ public class WriteClassicFragment extends Fragment {
 
             block = 1;
             crkey = newkey;
-            if(!keytools.readuid(sPort) && !keytools.authent(sPort, block, AB, newkey)
-                    && !keytools.readblock(sPort, block, blockBuffer)){
+            if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
+                    || !keytools.readblock(sPort, block, blockBuffer)){
                 return -6;
             }
             return 0;
@@ -510,9 +508,9 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-
-    class UID extends AsyncTask<Void, Void, Void> {
+    class UID extends AsyncTask<Void, Void, Integer> {
         KeyTools keytools;
+
 
         protected UID(){
             keytools = new KeyTools(1);
@@ -522,15 +520,14 @@ public class WriteClassicFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             pd.setTitle(getString(R.string.Считывание_UID));
-            pd.setMessage(getString(R.string.Поднесите_оригинал_ключа));
+            pd.setMessage(getString(R.string.Поднесите_оригинал_метки_к_устройству));
             pd.show();
             pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
             pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
-            pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Integer doInBackground(Void... voids) {
             try{
                 while(!keytools.readuid(sPort)){
                     if (isCancelled()) {
@@ -538,32 +535,47 @@ public class WriteClassicFragment extends Fragment {
                     }
                 }
             }catch(IOException e1){
-                this.cancel(true);
                 try{
                     sPort.close();
                 }catch(IOException e){
                 }
                 sPort = null;
-                return null;
+                return -1;
             }
-            return null;
+            return 1;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            TextWin.append("\nUID оригинала считан");
-            String s = String.format("%08X", keytools.uid);
-            TextEdit.setText(s);
+        protected void onPostExecute(Integer arg) {
+            super.onPostExecute(arg);
+            switch (arg){
+                case -1:
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+                case 1:
+                    toast = Toast.makeText(getContext(), R.string.UID_оригинала_считан, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\n" + getString(R.string.UID_оригинала_считан));
+                    String s = String.format("%08X", keytools.uid);
+                    TextUID.setText(s);
+                    break;
+                default:
+            }
             keytools.Busy = false;
             pd.dismiss();
         }
 
-
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            TextWin.append(getString(R.string.Операция_прервана));
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            TextWin.setText("\n" + getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }

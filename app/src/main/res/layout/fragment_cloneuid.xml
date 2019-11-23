@@ -72,6 +72,13 @@
             android:layout_weight="1"
             android:text="Восстановить 0-й блок ZERO" />
 
+        <Button
+            android:id="@+id/btnRestore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Сбросить криптоключи" />
+
     </LinearLayout>
 
 

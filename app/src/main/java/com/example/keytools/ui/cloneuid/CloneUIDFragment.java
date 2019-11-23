@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
-import com.example.usbserial.util.HexDump;
 
 import java.io.IOException;
 
@@ -33,12 +32,19 @@ public class CloneUIDFragment extends Fragment {
     Button btnReadUID;
     Button btnCloneUID;
     Button btnUnbrick;
+    Button btnRestore;
     ProgressDialog pd;
+    Toast toast;
 
+    final byte[] blockzero = {0x21, (byte)0xCA, (byte)0xC3, 0x39, 0x11, 0x08, 0x04, 0x00,
+            0x01, 0x4A, 0x73, 0x48, (byte)0xE7, 0x5E, 0x26, 0x1D};
+    final byte[] blockkey = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF,
+            (byte)0xFF, 0x07,  (byte)0x80, 0x69,
+            (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF };
+    private UID  readuid;
+    private WriteUID writeuid;
+    private UNBRICK unbrick;
 
-    UID  readuid;
-    WriteUID writeuid;
-    UNBRICK unbrick;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,15 +70,20 @@ public class CloneUIDFragment extends Fragment {
                     case R.id.btnUnbrick:
                         Unbrick(v);
                         break;
+                    case R.id.btnRestore:
+                        Unbrick(v);
+                        break;
                 }
             }
         };
         btnReadUID = root.findViewById(R.id.btnReadUID);
         btnCloneUID = root.findViewById(R.id.btnCloneUID);
         btnUnbrick = root.findViewById(R.id.btnUnbrick);
+        btnRestore = root.findViewById(R.id.btnRestore);
         btnReadUID.setOnClickListener(oclBtn);
         btnCloneUID.setOnClickListener(oclBtn);
         btnUnbrick.setOnClickListener(oclBtn);
+        btnRestore.setOnClickListener(oclBtn);
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
@@ -166,16 +177,26 @@ public class CloneUIDFragment extends Fragment {
             toast.show();
             return;
         }
-        unbrick.execute();
+        switch(v.getId()){
+
+            case R.id.btnUnbrick:
+                unbrick.execute(0);
+                break;
+
+            case R.id.btnRestore:
+                unbrick.execute(1);
+                break;
+        }
+
         KeyTools.Busy = true;
     }
 
 
-    class UNBRICK extends AsyncTask<Void, Integer, Integer> {
+    class UNBRICK extends AsyncTask<Integer, Integer, Integer> {
         KeyTools keytools;
+        int i;
+        String s;
         byte block = 0;
-        byte[] blockbuffer = {0x21, (byte)0xCA, (byte)0xC3, 0x39, 0x11, 0x08, 0x04, 0x00,
-                                    0x01, 0x4A, 0x73, 0x48, (byte)0xE7, 0x5E, 0x26, 0x1D};
 
 
         protected UNBRICK(){
@@ -185,47 +206,82 @@ public class CloneUIDFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setTitle("Восстановление ZERO");
-            pd.setMessage("Поднесите метку");
+            pd.setTitle(getString(R.string.Восстановление_ZERO));
+            pd.setMessage(getString(R.string.Поднесите_метку_ZERO_к_устройству));
             pd.show();
         }
 
         @Override
-        protected Integer doInBackground(Void... voids) {
+        protected Integer doInBackground(Integer... arg) {
             try{
-                while(true){
-                    if (isCancelled()) {
-                        return null;
-                    }
-                    if(keytools.readuid(sPort)){
-                        return 1;
-                    }
-                    if(!keytools.unlock(sPort)){
-                        continue;
-                    }
-                    if(keytools.readuid(sPort)){
-                        return 1;
-                    }
-                    if(!keytools.unlock(sPort)){
-                        continue;
-                    }
-                    if(!keytools.writeblock(sPort, block, blockbuffer)) {
-                        publishProgress(1);
-                        continue;
-                    }
-                        if (keytools.readuid(sPort)){
-                            return 2;
+                switch (arg[0]){
+                    case 0:
+                        publishProgress(0,1);
+                        while (true) {
+                            if (isCancelled()) {
+                                return null;
+                            }
+                            if (keytools.readuid(sPort)) {
+                                return 1;
+                            }
+                            if (!keytools.unlock(sPort)) {
+                                continue;
+                            }
+                            if (keytools.readuid(sPort)) {
+                                return 1;
+                            }
+                            if (!keytools.unlock(sPort)) {
+                                continue;
+                            }
+                            if (!keytools.writeblock(sPort, block, blockzero)) {
+                                publishProgress(1);
+                                continue;
+                            }
+                            if (keytools.readuid(sPort)) {
+                                return 2;
+                            }
                         }
-                    }
+
+                    case 1:
+                        publishProgress(0,2);
+                        while (true) {
+                            if (isCancelled()) {
+                                return null;
+                            }
+                            if (!keytools.readuid(sPort)) {
+                                continue;
+                            }
+                            if (!keytools.unlock(sPort)) {
+                                publishProgress(2);
+                                while(keytools.readuid(sPort)){
+                                    if (isCancelled()) {
+                                        return null;
+                                    }
+                                }
+                                continue;
+                            }
+                            for (i = 0; i < 16; i++) {
+                                while(!keytools.writeblock(sPort, (byte) (4 * i + 3), blockkey)) {
+                                    publishProgress(1,1);
+                                    if (isCancelled()) {
+                                        return null;
+                                    }
+                                }
+                                publishProgress(1,2);
+                            }
+                            return 3;
+                        }
+                }
+
             }catch(IOException e1){
-                this.cancel(true);
                 try{
                     sPort.close();
                 }catch(IOException e){
                 }
                 sPort = null;
-                return null;
+                return -1;
             }
+            return 1;
         }
 
 
@@ -234,8 +290,33 @@ public class CloneUIDFragment extends Fragment {
             Toast toast;
             super.onProgressUpdate(values);
             switch (values[0]) {
+                case 0:
+                    switch (values[1]) {
+                        case 1:
+                            pd.setTitle(getString(R.string.Восстановление_блока_0_ZERO));
+                            break;
+                        case 2:
+                            pd.setTitle(getString(R.string.Сброс_криптоключей_ZERO));
+                            break;
+                    }
+                    break;
+
                 case 1:
-                    pd.setMessage("Ошибка записи блока");
+                    switch (values[1]) {
+                        case 1:
+                            pd.setMessage(getString(R.string.Ошибка_записи_блока));
+                            break;
+                        case 2:
+                            pd.setMessage(getString(R.string.Блок_записан));
+                            break;
+                    }
+
+                    break;
+
+                case 2:
+                    toast = Toast.makeText(getContext(), R.string.Метка_не_ZERO_Сброс_ключей_невозможен, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     break;
 
                 default:
@@ -249,18 +330,34 @@ public class CloneUIDFragment extends Fragment {
             super.onPostExecute(values);
             Toast toast;
             switch(values){
+                case -1:
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
                 case 1:
-                    toast = Toast.makeText(getContext(), "Метка не требует восстановления", Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.Метка_не_требует_восстановления, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\nМетка не требует восстановления");
+                    TextWin.setText("\n" + getString(R.string.Метка_не_требует_восстановления));
                     break;
+
                 case 2:
-                    toast = Toast.makeText(getContext(), "Метка восстановлена", Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.Метка_восстановлена, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\nМетка восстановлена");
+                    TextWin.setText("\n" + getString(R.string.Метка_восстановлена));
                     break;
+
+                case 3:
+                    s = String.format(getString(R.string.Криптоключи_сброшены));
+                    toast = Toast.makeText(getContext(), s, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\n" + s);
+                    break;
+
             }
             keytools.Busy = false;
             pd.dismiss();
@@ -269,10 +366,10 @@ public class CloneUIDFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\nОперация прервана");
+            TextWin.setText("\n" + getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }
@@ -283,6 +380,7 @@ public class CloneUIDFragment extends Fragment {
         KeyTools keytools;
         byte[] blockBuffer = new byte[16];
         byte block;
+        int i;
 
 
         protected WriteUID() {
@@ -292,8 +390,8 @@ public class CloneUIDFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setTitle("Запись UID");
-            pd.setMessage("Поднесите метку");
+            pd.setTitle(getString(R.string.Запись_UID));
+            pd.setMessage(getString(R.string.Поднесите_метку_ZERO_к_устройству));
             pd.show();
         }
 
@@ -318,14 +416,19 @@ public class CloneUIDFragment extends Fragment {
                     }
                 }
                 block =0;
-                if(!keytools.readblock(sPort,block,blockBuffer)){
-                    return -1;
-                }
-                while( !keytools.readblock(sPort,block,blockBuffer)){    // Запись данных 0-го сектора
+                while( !keytools.readblock(sPort,block,blockBuffer)){    // Чтение данных 0-го сектора
                     if (isCancelled()) {
                         return null;
                     }
                     publishProgress(2);
+                }
+                for(i = 0; i < 16; i++){
+                    if(blockBuffer[i] != 0x00){
+                        break;
+                    }
+                }
+                if( i == 16){  // Если блок 0 содержит только 0x00
+                    System.arraycopy(blockzero, 0, blockBuffer, 0, 16);
                 }
                 keytools.IntToByteArray(uid[0], blockBuffer, 0);
                 blockBuffer[4] = 0;
@@ -349,7 +452,6 @@ public class CloneUIDFragment extends Fragment {
                 }
 
             }catch(IOException e1){
-                //this.cancel(true);
                 try{
                     sPort.close();
                 }catch(IOException e){
@@ -372,13 +474,13 @@ public class CloneUIDFragment extends Fragment {
                     toast.show();
                     break;
                 case 2:
-                    pd.setMessage("Ошибка чтения блока");
+                    pd.setMessage(getString(R.string.Ошибка_чтения_блока));
                     break;
                 case 3:
-                    pd.setMessage("Ошибка записи блока");
+                    pd.setMessage(getString(R.string.Ошибка_записи_блока));
                     break;
                 case 4:
-                    pd.setMessage("Ошибка чтения UID");
+                    pd.setMessage(getString(R.string.Ошибка_чтения_UID));
                     break;
 
                     default:
@@ -388,26 +490,31 @@ public class CloneUIDFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Integer values) {
-            Toast toast;
             super.onPostExecute(values);
             switch(values){
-                case 1:
-                    toast = Toast.makeText(getContext(), "UID записан", Toast.LENGTH_SHORT);
+                case -3:
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_чтения), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\nUID записан");
-                    break;
-                case -1:
-                    toast = Toast.makeText(getContext(), "Ошибка чтения", Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
-                    TextWin.setText("\nОшибка чтения");
+                    TextWin.setText("\n" + getString(R.string.Ошибка_чтения));
                     break;
                 case -2:
-                    toast = Toast.makeText(getContext(), "Ошибка записи", Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_записи), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\nОшибка записи");
+                    TextWin.setText("\n" + getString(R.string.Ошибка_записи));
+                    break;
+                case -1:
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+                case 1:
+                    toast = Toast.makeText(getContext(), R.string.UID_записан, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\n" + getString(R.string.UID_записан));
                     break;
             }
             keytools.Busy = false;
@@ -417,60 +524,70 @@ public class CloneUIDFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\nОперация прервана");
+            TextWin.setText("\n" + getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }
     }
 
 
-    class UID extends AsyncTask<Void, Void, Void> {
+    class UID extends AsyncTask<Void, Void, Integer> {
         KeyTools keytools;
 
-        protected UID(){
+        protected UID() {
             keytools = new KeyTools(1);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setTitle("Считывание UID");
-            pd.setMessage("Поднесите оригинал метки");
+            pd.setTitle(getString(R.string.Считывание_UID));
+            pd.setMessage(getString(R.string.Поднесите_оригинал_метки_к_устройству));
             pd.show();
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            try{
-                while(!keytools.readuid(sPort)){
+        protected Integer doInBackground(Void... voids) {
+            try {
+                while (!keytools.readuid(sPort)) {
                     if (isCancelled()) {
                         return null;
                     }
                 }
-            }catch(IOException e1){
-                this.cancel(true);
-                try{
+            } catch (IOException e1) {
+                try {
                     sPort.close();
-                }catch(IOException e){
+                } catch (IOException e) {
                 }
                 sPort = null;
-                return null;
+                return -1;
             }
-            return null;
+            return 1;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            Toast toast = Toast.makeText(getContext(), "UID оригинала считан", Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            TextWin.setText("\nUID оригинала считан");
-            String s = String.format("%08X", keytools.uid);
-            TextUID.setText(s);
+        protected void onPostExecute(Integer arg) {
+            super.onPostExecute(arg);
+            switch (arg) {
+                case -1:
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+                case 1:
+                    toast = Toast.makeText(getContext(), R.string.UID_оригинала_считан, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    TextWin.setText("\n" + getString(R.string.UID_оригинала_считан));
+                    String s = String.format("%08X", keytools.uid);
+                    TextUID.setText(s);
+                    break;
+                default:
+            }
             keytools.Busy = false;
             pd.dismiss();
         }
@@ -478,14 +595,13 @@ public class CloneUIDFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            Toast toast = Toast.makeText(getContext(), "Операция прервана", Toast.LENGTH_SHORT);
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\nОперация прервана");
+            TextWin.setText("\n" + getString(R.string.Операция_прервана));
             keytools.Busy = false;
             pd.dismiss();
         }
     }
-
 
 }

@@ -212,13 +212,12 @@ public class SectorCopyFragment extends Fragment {
                 }
 
             } catch (IOException e1) {
-                this.cancel(true);
                 try {
                     sPort.close();
                 } catch (IOException e) {
                 }
                 sPort = null;
-                return null;
+                return -1;
             }
 
             return 1;
@@ -232,19 +231,19 @@ public class SectorCopyFragment extends Fragment {
             switch (values[0]) {
 
                 case 1:
-                    toast = Toast.makeText(getContext(), "Ключ сектора неизвестен, попробуйте другую метку", Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.Ключ_сектора_неизвестен_попробуйте_другую_метку, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
 
                 case 2:
-                    toast = Toast.makeText(getContext(), "Запись блока 0 невозможна, попробуйте другую метку", Toast.LENGTH_SHORT);
+                    toast = Toast.makeText(getContext(), R.string.Запись_блока_0_невозможна_попробуйте_другую_метку, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
 
                 case 3:
-                    pd.setMessage("Ошибка записи сектора 0");
+                    pd.setMessage(getString(R.string.Ошибка_записи_сектора_0));
                     break;
 
                 default:
@@ -267,7 +266,10 @@ public class SectorCopyFragment extends Fragment {
                     break;
 
                 case -1:
-                    TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     break;
 
                 case -2:
@@ -318,7 +320,7 @@ public class SectorCopyFragment extends Fragment {
             super.onPreExecute();
             TextWin.setText("");
             pd.setTitle(getString(R.string.Считывание_UID));
-            pd.setMessage(getString(R.string.Поднесите_оригинал_к_устройству));
+            pd.setMessage(getString(R.string.Поднесите_оригинал_метки_к_устройству));
             pd.show();
             pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
         }
@@ -347,7 +349,9 @@ public class SectorCopyFragment extends Fragment {
                                 return null;
                             }
                         }
-                        publishProgress(2, (i + 1) );   //Подождите - идет захват!
+                        if(i < keytools.nSniff - 1){
+                            publishProgress(2, (i + 1) );   //Подождите - идет захват!
+                        }
                     }
 
                     publishProgress(3);     //Расчет ключей  Подождите ...
@@ -363,8 +367,7 @@ public class SectorCopyFragment extends Fragment {
                         if(Crk[i].block != 1 || Crk[i].AB != 0){
                             continue;
                         }
-                        keytools.readuid(sPort);
-                        if(keytools.authent(sPort, block, AB, Crk[i].key)){
+                        if(keytools.readuid(sPort) && keytools.authent(sPort, block, AB, Crk[i].key)){
                             crkey = Crk[i].key;
                             break;
                         }
@@ -403,18 +406,6 @@ public class SectorCopyFragment extends Fragment {
             super.onProgressUpdate(values);
             switch(values[0]){
 
-                case 0:
-                    switch(values[1]){
-                        case 1:
-                            toast = Toast.makeText(getContext(), R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-                            break;
-
-                        default:
-                    }
-                    break;
-
                 case 1:
                     pd.setTitle(getString(R.string.Захват_данных));
                     pd.setMessage(getString(R.string.Поднесите_устройство_к_считывателю_1_я_попытка));
@@ -427,13 +418,13 @@ public class SectorCopyFragment extends Fragment {
                     break;
 
                 case 3:
-                    pd.setTitle(getString(R.string.Расчет_ключей));      // Рассчет ключей
-                    pd.setMessage(getString(R.string.Подождите));    // Подождите
-                    pd.getButton(Dialog.BUTTON_NEUTRAL).setVisibility(View.INVISIBLE);
+                    pd.setTitle(getString(R.string.Расчет_ключей));
+                    pd.setMessage(getString(R.string.Подождите));
+                    pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
                     break;
 
                 case 4:
-                    TextWin.setText(R.string.Результат_расчета_криптоключей);             // Вывод ключей
+                    TextWin.setText(R.string.Результат_расчета_криптоключей);        // Вывод ключей
                     if(keytools.sn[0].filter != 0){
                         TextWin.append(getString(R.string.Обнаружен_ФИЛЬТР_ОТР));
                     }
@@ -444,7 +435,8 @@ public class SectorCopyFragment extends Fragment {
                                 Crk[i].block, StrKeyAB[Crk[i].AB], i, Crk[i].key));
                     }
                     pd.setTitle(getString(R.string.Чтение_метки));      // Рассчет ключей
-                    pd.setMessage(getString(R.string.Поднесите_оригинал_к_устройству));
+                    pd.setMessage(getString(R.string.Поднесите_оригинал_метки_к_устройству));
+                    pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
                     break;
 
                 case 5:
@@ -479,7 +471,10 @@ public class SectorCopyFragment extends Fragment {
                     break;
 
                 case -1:
-                    TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     break;
 
                 case -2:
@@ -531,8 +526,6 @@ public class SectorCopyFragment extends Fragment {
             }
             return true;
         }
-
-
     }
 
 }
