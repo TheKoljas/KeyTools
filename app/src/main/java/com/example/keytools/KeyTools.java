@@ -8,14 +8,14 @@ import com.example.usbserial.driver.UsbSerialPort;
 public class KeyTools {
 
     public int nSniff;                //Число попыток аутентификации для рассчета ключа
-    final static byte CMD = (byte) 0xA5;
-    final static byte GETINFO = 0x02;
-    final static byte GETUID = 0x04;
-    final static byte GETSNIFF = 0x06;
-    final static byte AUTHENT = 0x08;
-    final static byte READBLOCK = 0x0A;
-    final static byte WRITEBLOCK = 0x0C;
-    final static byte UNLOCK = 0x0E;
+    private final static byte CMD = (byte) 0xA5;
+    private final static byte GETINFO = 0x02;
+    private final static byte GETUID = 0x04;
+    private final static byte GETSNIFF = 0x06;
+    private final static byte AUTHENT = 0x08;
+    private final static byte READBLOCK = 0x0A;
+    private final static byte WRITEBLOCK = 0x0C;
+    private final static byte UNLOCK = 0x0E;
 
     private final static char[] HEX_DIGITS = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
@@ -23,11 +23,9 @@ public class KeyTools {
 
     public static boolean Busy;                        // Семафор занятости
 
-    byte[] buffer = new byte[128];
-    byte[] info = new byte[4];
+    private byte[] buffer = new byte[128];
+    private byte[] info = new byte[4];
     public int uid;
-//    public long[] criptokey;
-//    public byte[] keyerror;
 
     public Sniff[] sn;
     public String ErrMsg;
@@ -96,14 +94,12 @@ public class KeyTools {
             }
         }
         crk1 = new CryptoKey[jcrk];
-        for(int i = 0; i < jcrk; i ++){
-            crk1[i] = Crk[i];
-        }
+        System.arraycopy(Crk, 0, crk1, 0, jcrk);
         return crk1;
     }
 
 
-    protected boolean NoDuble(KeyTools.CryptoKey[] crk, int jcrk, long key, byte block, byte AB){
+    private boolean NoDuble(CryptoKey[] crk, int jcrk, long key, byte block, byte AB){
         for(int i = 0; i < jcrk; i++){
             if((crk[i].key == key ) &&
                     (crk[i].block == block) &&
@@ -130,9 +126,8 @@ public class KeyTools {
     }
 
 
-    public static int ByteArrayToInt(byte b[], int n) {
-        int s = 0;
-        s = 0xFF & b[n + 3];
+    public static int ByteArrayToInt(byte[] b, int n) {
+        int s = 0xFF & b[n + 3];
         s <<= 8;
         s |= 0xFF & b[n + 2];
         s <<= 8;

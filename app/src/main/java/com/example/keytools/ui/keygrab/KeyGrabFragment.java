@@ -25,10 +25,6 @@ import static com.example.keytools.MainActivity.sPort;
 
 public class KeyGrabFragment extends Fragment {
 
-
-
-//    private KeyGrabViewModel keyGrabViewModel;
-
     private TextView TextWin;
     private EditText TextEdit;
     private EditText NumSniff;
@@ -210,6 +206,13 @@ public class KeyGrabFragment extends Fragment {
                     TextBar.setText(getString(R.string.Расчет_ключей) + " ...");
                     progressBar.setIndeterminate(true);
                     btnCancel.setEnabled(false);
+//                    for(int i = 0; i < keytools.nSniff; i++){
+//                        for(int j = 0; j < keytools.sn[i].nkey; j++){
+//                            s = String.format("\ni = %d j = %d Block = %d AB = %d",i, j, keytools.sn[i].blockNumber[j], keytools.sn[i].keyAB[j]);
+//                            TextWin.append(s);
+//                        }
+//
+//                    }
                     break;
 
                 case -2:

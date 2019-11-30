@@ -96,8 +96,8 @@
             android:imeOptions="actionDone"
             android:inputType="number"
             android:singleLine="true"
-            android:textSize="24sp"
-            android:text="3" />
+            android:text="2"
+            android:textSize="24sp" />
     </LinearLayout>
 
     <LinearLayout

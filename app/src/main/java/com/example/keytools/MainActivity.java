@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         UsbManager manager = (UsbManager)getSystemService(Context.USB_SERVICE);
         List availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
         if (availableDrivers.isEmpty()) {
-            Toast toast = Toast.makeText(this, "Доступные драйвера не найдены", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, R.string.Адаптер_недоступен, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         UsbSerialDriver driver = (UsbSerialDriver)availableDrivers.get(0);
         UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
         if (connection == null) {
-            Toast toast = Toast.makeText(this, "Адаптер не найден", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, R.string.Адаптер_недоступен, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;

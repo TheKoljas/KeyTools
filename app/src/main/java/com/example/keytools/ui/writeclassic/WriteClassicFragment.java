@@ -412,6 +412,14 @@ public class WriteClassicFragment extends Fragment {
                     TextWin.append(s);
                     break;
 
+                case -3:
+                    s = String.format(Locale.US,"\n"+getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов));
+                    TextWin.append(s);
+                    toast = Toast.makeText(getContext(), getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов), Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+
                 default:
                     break;
             }
