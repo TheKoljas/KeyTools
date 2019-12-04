@@ -2,6 +2,7 @@ package com.example.keytools.ui.keygrab;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
+import com.example.keytools.SettingsActivity;
 
 import java.io.IOException;
 
@@ -41,7 +43,6 @@ public class KeyGrabFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-//        keyGrabViewModel = ViewModelProviders.of(this).get(KeyGrabViewModel.class);
         final View root = inflater.inflate(R.layout.fragment_keygrab, container, false);
 
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
@@ -53,9 +54,9 @@ public class KeyGrabFragment extends Fragment {
 
         TextBar = root.findViewById(R.id.TextBar);
 
-        TextEdit = (EditText) root.findViewById(R.id.EditUID);
-//        TextEdit.setText("1234ABCD");
-        NumSniff = (EditText) root.findViewById(R.id.NumSniff);
+        TextEdit = root.findViewById(R.id.EditUID);
+        NumSniff = root.findViewById(R.id.NumSniff);
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -84,6 +85,11 @@ public class KeyGrabFragment extends Fragment {
         return root;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+    }
 
     public void ReadUID(View view){
 
@@ -174,6 +180,7 @@ public class KeyGrabFragment extends Fragment {
         protected Void doInBackground(Void... voids) {
             try{
                 for(int i = 0; i < keytools.nSniff; i++){
+                    SystemClock.sleep(SettingsActivity.pause);
                     while(!keytools.getsniff(sPort,i)){
                         if (isCancelled()) {
                             return null;

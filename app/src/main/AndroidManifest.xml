@@ -27,6 +27,11 @@
                 android:resource="@xml/device_filter" />
 
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/Настройки"
+        />
     </application>
 
 </manifest>

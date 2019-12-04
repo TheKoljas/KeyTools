@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
+import com.example.keytools.SettingsActivity;
 import com.example.usbserial.util.HexDump;
 
 import java.io.IOException;
@@ -50,6 +52,7 @@ public class SectorCopyFragment extends Fragment {
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
         NumSniff = root.findViewById(R.id.NumSniff);
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -77,6 +80,13 @@ public class SectorCopyFragment extends Fragment {
             }
         });
         return root;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
     }
 
 
@@ -344,6 +354,7 @@ public class SectorCopyFragment extends Fragment {
                 }else{
                     publishProgress(1);                 //Поднесите PN532 к считывателю
                     for(i = 0; i < keytools.nSniff; i++){   // Захват данных от считывателя
+                        SystemClock.sleep(SettingsActivity.pause);
                         while(!keytools.getsniff(sPort,i)){
                             if (isCancelled()) {
                                 return null;

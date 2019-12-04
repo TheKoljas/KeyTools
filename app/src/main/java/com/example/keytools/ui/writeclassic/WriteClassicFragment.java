@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
+import com.example.keytools.SettingsActivity;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -53,6 +55,7 @@ public class WriteClassicFragment extends Fragment {
         TextUID.setText(R.string.ABCD1234);
 
         NumSniff = root.findViewById(R.id.NumSniff2);
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -96,6 +99,13 @@ public class WriteClassicFragment extends Fragment {
         pd.setMessage(getString(R.string.Поднесите_устройство_к_считывателю));
 
         return root;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
     }
 
 
@@ -230,6 +240,7 @@ public class WriteClassicFragment extends Fragment {
 
                 publishProgress(1);                 //Поднесите PN532 к считывателю
                 for(i = 0; i < keytools.nSniff; i++){   // Захват данных от считывателя
+                    SystemClock.sleep(SettingsActivity.pause);
                     while(!keytools.getsniff(sPort,i)){
                         if (isCancelled()) {
                             return null;

@@ -8,6 +8,9 @@ import com.example.usbserial.driver.UsbSerialPort;
 public class KeyTools {
 
     public int nSniff;                //Число попыток аутентификации для рассчета ключа
+    private final  int SNIFF_TIMEOUT = 3000;
+    private final  int READ_TIMEOUT = 2000;
+    private final  int WRITE_TIMEOUT = 500;
     private final static byte CMD = (byte) 0xA5;
     private final static byte GETINFO = 0x02;
     private final static byte GETUID = 0x04;
@@ -224,8 +227,8 @@ public class KeyTools {
         writebuffer[0] = (byte) CMD;
         writebuffer[1] = GETINFO;
         writebuffer[2] = 3;
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[0] != (CMD + 1)) || (buffer[1] != (GETINFO + 1)) || (buffer[2] != lentgh)) {
@@ -248,8 +251,8 @@ public class KeyTools {
         writebuffer[1] = GETUID;
         writebuffer[2] = n;
 
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (GETUID + 1))) {
@@ -275,8 +278,8 @@ public class KeyTools {
         writebuffer[5] = (byte) ((uid >>> 8) & 0xFF);
         writebuffer[6] = (byte) (uid & 0xFF);
 
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer,SNIFF_TIMEOUT)){
             return false;
         }
         if ((buffer[0] != (CMD + 1)) || (buffer[1] != (GETSNIFF + 1)) || (buffer[4] == 0)){
@@ -319,8 +322,8 @@ public class KeyTools {
         writebuffer[3] = block;
         writebuffer[4] = keyAB;
         KeyToByteArray(autent_key,writebuffer,5);
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (AUTHENT + 1))) {
@@ -342,8 +345,8 @@ public class KeyTools {
         writebuffer[2] = n;
         writebuffer[3] = block;
 
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (READBLOCK + 1))) {
@@ -370,8 +373,8 @@ public class KeyTools {
             writebuffer[ i + 4 ] = data[ i ];
         }
 
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (WRITEBLOCK + 1))) {
@@ -390,8 +393,8 @@ public class KeyTools {
         writebuffer[0] = (byte) CMD;
         writebuffer[1] = UNLOCK;
         writebuffer[2] = 3;
-        sPort.write(writebuffer, 500);
-        if(!SerialRead(sPort,buffer,2000)){
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
             return false;
         }
         if ((buffer[0] != (CMD + 1)) || (buffer[1] != (UNLOCK + 1)) || (buffer[2] != lentgh)) {

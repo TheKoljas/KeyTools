@@ -5,7 +5,7 @@
     <string name="nav_header_title">KeyTools</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
+    <string name="Настройки">Настройки</string>
 
     <string name="menu_home">Захват криптоключа</string>
     <string name="menu_gallery">Запись на Classic</string>
@@ -16,8 +16,6 @@
 
     <string name="keytools">KeyTools</string>
 
-
-
     <string name="ABCD1234">1234ABCD</string>
     <string name="Block_KEY">\nBlock %d %s \nKEY %d = %012X</string>
     <string name="OK">OK</string>
@@ -25,6 +23,7 @@
     <string name="UID_записан">UID записан</string>
     <string name="UID_не_совпадает_Попробуйте_другую_заготовку">UID не совпадает! Попробуйте другую заготовку!</string>
     <string name="UID_оригинала_считан">UID оригинала считан</string>
+    <string name="Адаптер_недоступен">Доступные драйвера не найдены</string>
     <string name="Блок_записан">Блок записан</string>
     <string name="Восстановление_ZERO">Восстановление ZERO</string>
     <string name="Восстановление_блока_0_ZERO">Восстановление блока 0 ZERO</string>
@@ -61,6 +60,7 @@
     <string name="Ошибка_чтения">Ошибка чтения</string>
     <string name="Ошибка_чтения_UID">Ошибка чтения UID</string>
     <string name="Ошибка_чтения_блока">Ошибка чтения блока</string>
+    <string name="Пауза">Пауза (мс)</string>
     <string name="Поднесите_заготовку_Classic_к_устройству">Поднесите заготовку Classic к устройству</string>
     <string name="Поднесите_заготовку_Mifare_Classic_к_устройству">Поднесите заготовку Mifare Classic к устройству</string>
     <string name="Поднесите_заготовку_ZERO_к_устройству">Поднесите заготовку ZERO к устройству</string>
@@ -77,6 +77,7 @@
     <string name="Результат_расчета_криптоключей">\nРезультат расчета криптоключей :</string>
     <string name="Сброс_криптоключей_ZERO">Сброс криптоключей ZERO</string>
     <string name="Следующий">Следующий</string>
+    <string name="Сохранить">Сохранить</string>
     <string name="Стереть">Стереть</string>
     <string name="Считать_с_оригинала">Считать с оригинала</string>
     <string name="Считывание_UID">Считывание UID</string>
@@ -84,6 +85,6 @@
     <string name="Чтение_метки">Чтение метки</string>
     <string name="попытка">попытка</string>
     <string name="Ключи_не_найдены_Попробуйте_увеличить_число_захватов">Ключи не найдены! Попробуйте увеличить число захватов!</string>
-    <string name="Адаптер_недоступен">Доступные драйвера не найдены</string>
+
 
 </resources>
