@@ -34,7 +34,7 @@ public class WriteClassicFragment extends Fragment {
 
     private TextView TextWin;
     private EditText TextUID;
-    private EditText NumSniff;
+//    private EditText NumSniff;
     private ProgressDialog pd;
     Toast toast;
 
@@ -54,8 +54,8 @@ public class WriteClassicFragment extends Fragment {
         TextUID = root.findViewById(R.id.TextBar);
         TextUID.setText(R.string.ABCD1234);
 
-        NumSniff = root.findViewById(R.id.NumSniff2);
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+//        NumSniff = root.findViewById(R.id.NumSniff2);
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -102,11 +102,11 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+//    }
 
 
     private void ReadUID(){
@@ -135,14 +135,14 @@ public class WriteClassicFragment extends Fragment {
 
         Integer kod;
         try {
-            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-            if(nSniff < 2){
-                toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-                return;
-            }
-            writekey = new WriteClassic(nSniff);
+//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
+//            if(nSniff < 2){
+//                toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
+//                toast.setGravity(Gravity.CENTER, 0, 0);
+//                toast.show();
+//                return;
+//            }
+            writekey = new WriteClassic(SettingsActivity.nsniff);
             String s = TextUID.getText().toString();
             if(s.length() != 8){
                 toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_UID, Toast.LENGTH_LONG);

@@ -29,7 +29,7 @@ public class KeyGrabFragment extends Fragment {
 
     private TextView TextWin;
     private EditText TextEdit;
-    private EditText NumSniff;
+//    private EditText NumSniff;
     private TextView TextBar;
     ProgressBar progressBar;
     Button btnReadUID;
@@ -55,8 +55,9 @@ public class KeyGrabFragment extends Fragment {
         TextBar = root.findViewById(R.id.TextBar);
 
         TextEdit = root.findViewById(R.id.EditUID);
-        NumSniff = root.findViewById(R.id.NumSniff);
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+
+//        NumSniff = root.findViewById(R.id.NumSniff);
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -85,11 +86,11 @@ public class KeyGrabFragment extends Fragment {
         return root;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+//    }
 
     public void ReadUID(View view){
 
@@ -115,15 +116,15 @@ public class KeyGrabFragment extends Fragment {
         }
 
         try {
-            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-            if(nSniff < 2){
-                Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода !\n" +
-                        "Число захватов меньше 2 !", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-                return;
-            }
-            sniffkey = new KEY(nSniff);
+//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
+//            if(nSniff < 2){
+//                Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода !\n" +
+//                        "Число захватов меньше 2 !", Toast.LENGTH_LONG);
+//                toast.setGravity(Gravity.CENTER, 0, 0);
+//                toast.show();
+//                return;
+//            }
+            sniffkey = new KEY(SettingsActivity.nsniff);
             sniffkey.keytools.uid = (int)Long.parseLong(TextEdit.getText().toString(), 16);
         }catch(NumberFormatException e){
             Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода UID !" + e.toString() , Toast.LENGTH_LONG);
@@ -171,7 +172,7 @@ public class KeyGrabFragment extends Fragment {
             progressBar.setProgress(0);
             progressBar.setVisibility(ProgressBar.VISIBLE);
             TextEdit.setEnabled(false);
-            NumSniff.setEnabled(false);
+//            NumSniff.setEnabled(false);
             btnReadUID.setEnabled(false);
             btnKeyGrab.setEnabled(false);
         }
@@ -254,7 +255,7 @@ public class KeyGrabFragment extends Fragment {
             keytools.Busy = false;
             btnCancel.setEnabled(true);
             TextEdit.setEnabled(true);
-            NumSniff.setEnabled(true);
+//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -266,7 +267,7 @@ public class KeyGrabFragment extends Fragment {
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-            NumSniff.setEnabled(true);
+//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -286,7 +287,7 @@ public class KeyGrabFragment extends Fragment {
             TextBar.setText("Поднесите метку");
             progressBar.setVisibility(ProgressBar.VISIBLE);
             TextEdit.setEnabled(false);
-            NumSniff.setEnabled(false);
+//            NumSniff.setEnabled(false);
             btnReadUID.setEnabled(false);
             btnKeyGrab.setEnabled(false);
         }
@@ -320,7 +321,7 @@ public class KeyGrabFragment extends Fragment {
             TextEdit.setText(s);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-            NumSniff.setEnabled(true);
+//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -332,7 +333,7 @@ public class KeyGrabFragment extends Fragment {
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-            NumSniff.setEnabled(true);
+//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }

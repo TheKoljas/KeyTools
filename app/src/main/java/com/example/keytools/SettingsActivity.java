@@ -73,7 +73,7 @@ public class SettingsActivity extends AppCompatActivity {
         nsniff = defnsniff;
         pause = defpause;
         SaveSettings(this);
-//        this.finish();
+        this.finish();
     }
 
 
@@ -98,8 +98,8 @@ public class SettingsActivity extends AppCompatActivity {
             Pause.setText(Integer.toString(np));
         }
         pause = np;
-
         SaveSettings(this);
+        this.finish();
     }
 
     @Override

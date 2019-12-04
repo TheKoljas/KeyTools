@@ -34,7 +34,7 @@ public class SectorCopyFragment extends Fragment {
     private TextView TextWin;
     Button btnReadSector;
     Button btnWriteSector;
-    private EditText NumSniff;
+//    private EditText NumSniff;
     ProgressDialog pd;
     byte[][] sectorbuffer = new byte[4][16];
     boolean emptyBuffer = true;
@@ -51,8 +51,8 @@ public class SectorCopyFragment extends Fragment {
         TextWin = root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
-        NumSniff = root.findViewById(R.id.NumSniff);
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+//        NumSniff = root.findViewById(R.id.NumSniff);
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -83,11 +83,11 @@ public class SectorCopyFragment extends Fragment {
     }
 
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+//    }
 
 
     void Cancel(){
@@ -106,14 +106,14 @@ public class SectorCopyFragment extends Fragment {
             return;
         }
         try {
-            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-            if(nSniff < 2){
-                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-                return;
-            }
-            readsector = new READSECTOR(nSniff);
+//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
+//            if(nSniff < 2){
+//                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
+//                toast.setGravity(Gravity.CENTER, 0, 0);
+//                toast.show();
+//                return;
+//            }
+            readsector = new READSECTOR(SettingsActivity.nsniff);
         }catch(NumberFormatException e){
             Toast toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
