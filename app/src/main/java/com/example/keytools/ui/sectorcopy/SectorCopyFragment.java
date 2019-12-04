@@ -32,12 +32,14 @@ import static com.example.keytools.MainActivity.sPort;
 public class SectorCopyFragment extends Fragment {
 
     private TextView TextWin;
+    private TextView TexDump;
+
     Button btnReadSector;
     Button btnWriteSector;
 //    private EditText NumSniff;
     ProgressDialog pd;
-    byte[][] sectorbuffer = new byte[4][16];
-    boolean emptyBuffer = true;
+    static byte[][] sectorbuffer = new byte[4][16];
+    static boolean emptyBuffer = true;
     Toast toast;
 
     READSECTOR readsector;
@@ -51,6 +53,18 @@ public class SectorCopyFragment extends Fragment {
         TextWin = root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
+
+        TexDump = root.findViewById(R.id.textDump);
+        TexDump.setMovementMethod(new ScrollingMovementMethod());
+        TexDump.setTextIsSelectable(true);
+        TexDump.setText("");
+        for(int i = 0; i < 4; i++){
+            if (i > 0) {
+                TexDump.append("\n");
+            }
+            TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
+        }
+
 //        NumSniff = root.findViewById(R.id.NumSniff);
 //        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
@@ -83,11 +97,18 @@ public class SectorCopyFragment extends Fragment {
     }
 
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
+        TexDump.setText("");
+        for(int i = 0; i < 4; i++){
+            if (i > 0) {
+                TexDump.append("\n");
+            }
+            TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
+        }
 //        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-//    }
+    }
 
 
     void Cancel(){
@@ -269,10 +290,13 @@ public class SectorCopyFragment extends Fragment {
             super.onPostExecute(arg);
             switch (arg) {
                 case 1:
-                    TextWin.append("\n\n" + getString(R.string.Дамп_записан_успешно) + " :");
-                    for (int i = 0; i < 4; i++) {
-                        TextWin.append("\n" + KeyTools.BlockToString(sectorbuffer[i]));
-                    }
+                    TextWin.append("\n\n" + getString(R.string.Дамп_записан_успешно) + "\n");
+                    toast = Toast.makeText(getContext(), getString(R.string.Дамп_записан_успешно), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+//                    for (int i = 0; i < 4; i++) {
+//                        TextWin.append("\n" + KeyTools.BlockToString(sectorbuffer[i]));
+//                    }
                     break;
 
                 case -1:
@@ -474,9 +498,13 @@ public class SectorCopyFragment extends Fragment {
             super.onPostExecute(arg);
             switch(arg){
                 case 1:
-                    TextWin.append("\n\n" + getString(R.string.Дамп_сектора) + ":");
+//                    TextWin.append("\n\n" + getString(R.string.Дамп_сектора) + ":");
+                    TexDump.setText("");
                     for(int i = 0; i < 4; i++){
-                        TextWin.append("\n" + KeyTools.BlockToString(sectorbuffer[i]));
+                        if (i > 0) {
+                            TexDump.append("\n");
+                        }
+                        TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
                     }
                     emptyBuffer = false;
                     break;

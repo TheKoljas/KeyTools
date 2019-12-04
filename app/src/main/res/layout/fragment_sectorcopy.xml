@@ -50,6 +50,29 @@
         android:background="?android:attr/listDivider" />
 
     <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Дамп сектора 0 :" />
+
+    <TextView
+        android:id="@+id/textDump"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+<!--        android:layout_weight="1"-->
+<!--        android:freezesText="true"-->
+<!--        android:gravity="bottom"-->
+<!--        android:scrollbars="vertical"-->
+
+
+    <View
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider" />
+
+    <TextView
         android:id="@+id/textWin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

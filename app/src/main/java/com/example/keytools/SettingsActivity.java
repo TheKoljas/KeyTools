@@ -79,27 +79,35 @@ public class SettingsActivity extends AppCompatActivity {
 
     private  void Apply(){
 
-        int ns = Integer.parseInt(NumSniff.getText().toString());
-        if(ns < 2){
-            toast = Toast.makeText(this, R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            ns = 2;
-            NumSniff.setText(Integer.toString(ns));
-        }
+        try {
+            int ns = Integer.parseInt(NumSniff.getText().toString());
+            if(ns < 2){
+                toast = Toast.makeText(this, R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                ns = 2;
+                NumSniff.setText(Integer.toString(ns));
+            }
             nsniff = ns;
 
-        int np = Integer.parseInt(Pause.getText().toString());
-        if(np > 1500){
-            toast = Toast.makeText(this, "Пауза не должна быть больше 1500 !", Toast.LENGTH_LONG);
+            int np = Integer.parseInt(Pause.getText().toString());
+            if(np > 1500){
+                toast = Toast.makeText(this, "Пауза не должна быть больше 1500 !", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                np = 1500;
+                Pause.setText(Integer.toString(np));
+            }
+            pause = np;
+            SaveSettings(this);
+            this.finish();
+
+        } catch (NumberFormatException e) {
+            Toast toast = Toast.makeText(this, "Ошибка ввода !\n" + e.toString(), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            np = 1500;
-            Pause.setText(Integer.toString(np));
+            return;
         }
-        pause = np;
-        SaveSettings(this);
-        this.finish();
     }
 
     @Override
