@@ -29,56 +29,52 @@ public class KeyGrabFragment extends Fragment {
 
     private TextView TextWin;
     private EditText TextEdit;
-//    private EditText NumSniff;
     private TextView TextBar;
-    ProgressBar progressBar;
-    Button btnReadUID;
-    Button btnKeyGrab;
-    Button btnCancel;
-    String s;
+    private ProgressBar progressBar;
+    private Button btnReadUID;
+    private Button btnKeyGrab;
+    private Button btnCancel;
 
-    UID  readuid;
-    KEY sniffkey;
+    private UID  readuid;
+    private KEY sniffkey;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        final View root = inflater.inflate(R.layout.fragment_keygrab, container, false);
+        final View root;
+        root = inflater.inflate(R.layout.fragment_keygrab, container, false);
 
-        progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
+        progressBar = root.findViewById(R.id.progressBar);
         progressBar.setVisibility(ProgressBar.INVISIBLE);
 
         TextWin = root.findViewById(R.id.textView4);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 
-        TextBar = root.findViewById(R.id.TextBar);
+        TextBar = root.findViewById(R.id.TextUID);
 
         TextEdit = root.findViewById(R.id.EditUID);
-
-//        NumSniff = root.findViewById(R.id.NumSniff);
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch(v.getId()){
                     case R.id.btnReadUID:
-                        ReadUID(v);
+                        ReadUID();
                         break;
                     case R.id.btnKeyGrab:
-                        ReadKey(v);
+                        ReadKey();
                         break;
                     case R.id.btnCancel:
-                        Cancel(v);
+                        Cancel();
                         break;
                 }
             }
         };
 
-        btnReadUID = (Button)root.findViewById(R.id.btnReadUID);
-        btnKeyGrab = (Button)root.findViewById(R.id.btnKeyGrab);
-        btnCancel = (Button)root.findViewById(R.id.btnCancel);
+        btnReadUID = root.findViewById(R.id.btnReadUID);
+        btnKeyGrab = root.findViewById(R.id.btnKeyGrab);
+        btnCancel = root.findViewById(R.id.btnCancel);
         btnReadUID.setOnClickListener(oclBtn);
         btnKeyGrab.setOnClickListener(oclBtn);
         btnCancel.setOnClickListener(oclBtn);
@@ -86,18 +82,12 @@ public class KeyGrabFragment extends Fragment {
         return root;
     }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-//    }
 
-    public void ReadUID(View view){
+    private void ReadUID(){
 
         if(KeyTools.Busy){
             return;
         }
-
         readuid = new UID();
         if (!readuid.keytools.TestPort(sPort)) {
             Toast toast = Toast.makeText(this.getContext(), readuid.keytools.ErrMsg , Toast.LENGTH_LONG);
@@ -109,21 +99,12 @@ public class KeyGrabFragment extends Fragment {
         readuid.execute();
     }
 
-    public  void ReadKey(View view){
+    private void ReadKey(){
 
         if(KeyTools.Busy){
             return;
         }
-
         try {
-//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-//            if(nSniff < 2){
-//                Toast toast = Toast.makeText(this.getContext(), "Ошибка ввода !\n" +
-//                        "Число захватов меньше 2 !", Toast.LENGTH_LONG);
-//                toast.setGravity(Gravity.CENTER, 0, 0);
-//                toast.show();
-//                return;
-//            }
             sniffkey = new KEY(SettingsActivity.nsniff);
             sniffkey.keytools.uid = (int)Long.parseLong(TextEdit.getText().toString(), 16);
         }catch(NumberFormatException e){
@@ -144,7 +125,8 @@ public class KeyGrabFragment extends Fragment {
     }
 
 
-    void Cancel(View view) {
+    private void Cancel() {
+
         if (readuid != null) {
             readuid.cancel(true);
         }
@@ -159,20 +141,20 @@ public class KeyGrabFragment extends Fragment {
         KeyTools keytools;
         KeyTools.CryptoKey[] Crk;
 
-        public  KEY(int n){
+        KEY(int n){
             keytools = new KeyTools(n);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            TextBar.setText(getString(R.string.Захват_данных ) + " ...");
+            String s = getString(R.string.Захват_данных ) + " ...";
+            TextBar.setText(s);
             TextWin.setText("");
             progressBar.setIndeterminate(true);
             progressBar.setProgress(0);
             progressBar.setVisibility(ProgressBar.VISIBLE);
             TextEdit.setEnabled(false);
-//            NumSniff.setEnabled(false);
             btnReadUID.setEnabled(false);
             btnKeyGrab.setEnabled(false);
         }
@@ -211,7 +193,8 @@ public class KeyGrabFragment extends Fragment {
             super.onProgressUpdate(values);
             switch(values[0]){
                 case -1:
-                    TextBar.setText(getString(R.string.Расчет_ключей) + " ...");
+                    String s = getString(R.string.Расчет_ключей) + " ...";
+                    TextBar.setText(s);
                     progressBar.setIndeterminate(true);
                     btnCancel.setEnabled(false);
 //                    for(int i = 0; i < keytools.nSniff; i++){
@@ -239,7 +222,7 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             String s;
-            String StrKeyAB[] = {"Key A", "Key B"};
+            String[] StrKeyAB = {"Key A", "Key B"};
             super.onPostExecute(aVoid);
             TextBar.setText(R.string.Рассчет_окончен);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
@@ -255,7 +238,6 @@ public class KeyGrabFragment extends Fragment {
             keytools.Busy = false;
             btnCancel.setEnabled(true);
             TextEdit.setEnabled(true);
-//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -267,7 +249,6 @@ public class KeyGrabFragment extends Fragment {
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -277,17 +258,16 @@ public class KeyGrabFragment extends Fragment {
     class UID extends AsyncTask<Void, Void, Void> {
         KeyTools keytools;
 
-        public UID(){
+        UID(){
             keytools = new KeyTools(1);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            TextBar.setText("Поднесите метку");
+            TextBar.setText(R.string.Поднесите_метку);
             progressBar.setVisibility(ProgressBar.VISIBLE);
             TextEdit.setEnabled(false);
-//            NumSniff.setEnabled(false);
             btnReadUID.setEnabled(false);
             btnKeyGrab.setEnabled(false);
         }
@@ -315,13 +295,12 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            TextBar.setText("UID считан");
+            TextBar.setText(R.string.UID_считан);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             String s = String.format("%08X", keytools.uid);
             TextEdit.setText(s);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
@@ -329,15 +308,13 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            TextBar.setText("Операция прервана");
+            TextBar.setText(R.string.Операция_прервана);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
             TextEdit.setEnabled(true);
-//            NumSniff.setEnabled(true);
             btnReadUID.setEnabled(true);
             btnKeyGrab.setEnabled(true);
         }
     }
-
 
 }

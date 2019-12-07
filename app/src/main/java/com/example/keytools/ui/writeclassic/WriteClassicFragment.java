@@ -1,5 +1,6 @@
 package com.example.keytools.ui.writeclassic;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -22,21 +23,19 @@ import androidx.fragment.app.Fragment;
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
 import com.example.keytools.SettingsActivity;
+import com.example.keytools.ui.sectorcopy.SectorCopyFragment;
 
 import java.io.IOException;
 import java.util.Locale;
 
-//import static com.example.keytools.MainActivity.cr;
-//import static com.example.keytools.MainActivity.keytools;
 import static com.example.keytools.MainActivity.sPort;
 
 public class WriteClassicFragment extends Fragment {
 
     private TextView TextWin;
     private EditText TextUID;
-//    private EditText NumSniff;
     private ProgressDialog pd;
-    Toast toast;
+    private Toast toast;
 
     private UID readuid;
     private WriteClassic writekey;
@@ -51,11 +50,7 @@ public class WriteClassicFragment extends Fragment {
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 
-        TextUID = root.findViewById(R.id.TextBar);
-        TextUID.setText(R.string.ABCD1234);
-
-//        NumSniff = root.findViewById(R.id.NumSniff2);
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
+        TextUID = root.findViewById(R.id.TextUID);
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -102,11 +97,23 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
-//    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        int kod;
+        if(!SectorCopyFragment.emptyBuffer){
+            kod = 0xFF & SectorCopyFragment.sectorbuffer[1][0];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][1];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][2];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][3];
+        }else{
+            kod = 0x1234ABCD;
+        }
+        TextUID.setText(String.format("%08X", kod));
+    }
 
 
     private void ReadUID(){
@@ -135,13 +142,6 @@ public class WriteClassicFragment extends Fragment {
 
         Integer kod;
         try {
-//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-//            if(nSniff < 2){
-//                toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
-//                toast.setGravity(Gravity.CENTER, 0, 0);
-//                toast.show();
-//                return;
-//            }
             writekey = new WriteClassic(SettingsActivity.nsniff);
             String s = TextUID.getText().toString();
             if(s.length() != 8){
@@ -180,6 +180,7 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     private class WriteClassic extends AsyncTask<Integer, Integer, Integer> {
 
         KeyTools keytools;
@@ -214,7 +215,7 @@ public class WriteClassicFragment extends Fragment {
         @Override
         protected Integer doInBackground(Integer... kod) {
             int uid;
-            int err, tagkod = 0;
+            int tagkod;
 
             try{
                 block = 1;
@@ -265,7 +266,7 @@ public class WriteClassicFragment extends Fragment {
                     if(!waittag(uid)){      // Ожидание метки
                         return null;
                     }
-                    while( 0 != (err = writesector(crkey , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
+                    while( 0 != (writesector(crkey , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
                         if (isCancelled()) {
                             return null;
                         }
@@ -291,7 +292,7 @@ public class WriteClassicFragment extends Fragment {
                                 if(!waittag(uid)){      // Ожидание метки
                                     return null;
                                 }
-                                while( 0 != (err = writesector(crkey , defkey, tagkod, uid))){    // Запись данных 0-го сектора
+                                while( 0 != (writesector(crkey , defkey, tagkod, uid))){    // Запись данных 0-го сектора
                                     if (isCancelled()) {
                                         return null;
                                     }
@@ -419,12 +420,11 @@ public class WriteClassicFragment extends Fragment {
                     break;
 
                 case -2:
-                    s = String.format(Locale.US,getString(R.string.Метка_стерта));
-                    TextWin.append(s);
+                    TextWin.append(getString(R.string.Метка_стерта));
                     break;
 
                 case -3:
-                    s = String.format(Locale.US,"\n"+getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов));
+                    s = "\n"+getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов);
                     TextWin.append(s);
                     toast = Toast.makeText(getContext(), getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов), Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER, 0, 0);
@@ -435,7 +435,7 @@ public class WriteClassicFragment extends Fragment {
                     break;
             }
 
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
 
         }
@@ -445,12 +445,12 @@ public class WriteClassicFragment extends Fragment {
         protected void onCancelled(Integer arg) {
             super.onCancelled(arg);
             TextWin.append(getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
 
-        protected boolean waittag(int uid) throws IOException {
+        boolean waittag(int uid) throws IOException {
             while(true) {
                 // Ждем метку
                 while( !keytools.readuid(sPort)) {
@@ -474,7 +474,7 @@ public class WriteClassicFragment extends Fragment {
         }
 
 
-        protected int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
+        int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
             byte block = 1;
             byte AB = 0;
             crkey = oldkey;
@@ -492,7 +492,7 @@ public class WriteClassicFragment extends Fragment {
             }
 
             clrbuf(blockBuffer);
-            keytools.IntToByteArray(kod, blockBuffer, 0);
+            KeyTools.IntToByteArray(kod, blockBuffer, 0);
 
             block = 1;
             if(!keytools.writeblock(sPort,block, blockBuffer)){
@@ -503,7 +503,7 @@ public class WriteClassicFragment extends Fragment {
             if(!keytools.readblock(sPort, block, blockBuffer)){
                 return -4;
             }
-            keytools.KeyToByteArray(newkey, blockBuffer, 0);
+            KeyTools.KeyToByteArray(newkey, blockBuffer, 0);
             if(!keytools.writeblock(sPort, block, blockBuffer)){
                 return -5;
             }
@@ -518,7 +518,7 @@ public class WriteClassicFragment extends Fragment {
         }
 
 
-        protected void clrbuf(byte[] buf){
+        void clrbuf(byte[] buf){
             for(int i = 0; i < buf.length; i++){
                 buf[i] = 0;             }
         }
@@ -531,7 +531,7 @@ public class WriteClassicFragment extends Fragment {
         KeyTools keytools;
 
 
-        protected UID(){
+        UID(){
             keytools = new KeyTools(1);
         }
 
@@ -578,13 +578,14 @@ public class WriteClassicFragment extends Fragment {
                     toast = Toast.makeText(getContext(), R.string.UID_оригинала_считан, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.UID_оригинала_считан));
-                    String s = String.format("%08X", keytools.uid);
+                    String s = "\n" + getString(R.string.UID_оригинала_считан);
+                    TextWin.setText(s);
+                    s = String.format("%08X", keytools.uid);
                     TextUID.setText(s);
                     break;
                 default:
             }
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
@@ -594,8 +595,9 @@ public class WriteClassicFragment extends Fragment {
             toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\n" + getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.setText(s);
+            KeyTools.Busy = false;
             pd.dismiss();
         }
     }

@@ -1,5 +1,6 @@
 package com.example.keytools.ui.cloneuid;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -29,16 +30,12 @@ public class CloneUIDFragment extends Fragment {
 
     private TextView TextWin;
     private EditText TextUID;
-    Button btnReadUID;
-    Button btnCloneUID;
-    Button btnUnbrick;
-    Button btnRestore;
-    ProgressDialog pd;
-    Toast toast;
+    private ProgressDialog pd;
+    private Toast toast;
 
-    final byte[] blockzero = {0x21, (byte)0xCA, (byte)0xC3, 0x39, 0x11, 0x08, 0x04, 0x00,
+    private final byte[] blockzero = {0x21, (byte)0xCA, (byte)0xC3, 0x39, 0x11, 0x08, 0x04, 0x00,
             0x01, 0x4A, 0x73, 0x48, (byte)0xE7, 0x5E, 0x26, 0x1D};
-    final byte[] blockkey = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF,
+    private final byte[] blockkey = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF,
             (byte)0xFF, 0x07,  (byte)0x80, 0x69,
             (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF };
     private UID  readuid;
@@ -50,36 +47,35 @@ public class CloneUIDFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_cloneuid, container, false);
+        View root;
+        root = inflater.inflate(R.layout.fragment_cloneuid, container, false);
 
         TextWin = root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
-        TextUID = (EditText) root.findViewById(R.id.EditUID);
+        TextUID = root.findViewById(R.id.EditUID);
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch(v.getId()){
                     case R.id.btnReadUID:
-                        ReadUID(v);
+                        ReadUID();
                         break;
                     case R.id.btnCloneUID:
-                        WriteUID(v);
+                        WriteUID();
                         break;
                     case R.id.btnUnbrick:
-                        Unbrick(v);
-                        break;
                     case R.id.btnRestore:
                         Unbrick(v);
                         break;
                 }
             }
         };
-        btnReadUID = root.findViewById(R.id.btnReadUID);
-        btnCloneUID = root.findViewById(R.id.btnCloneUID);
-        btnUnbrick = root.findViewById(R.id.btnUnbrick);
-        btnRestore = root.findViewById(R.id.btnRestore);
+        Button btnReadUID = root.findViewById(R.id.btnReadUID);
+        Button btnCloneUID = root.findViewById(R.id.btnCloneUID);
+        Button btnUnbrick = root.findViewById(R.id.btnUnbrick);
+        Button btnRestore = root.findViewById(R.id.btnRestore);
         btnReadUID.setOnClickListener(oclBtn);
         btnCloneUID.setOnClickListener(oclBtn);
         btnUnbrick.setOnClickListener(oclBtn);
@@ -97,7 +93,7 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
-    void ReadUID(View view){
+    private void ReadUID(){
 
         if(KeyTools.Busy){
             return;
@@ -115,7 +111,7 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
-    void WriteUID(View v){
+    private void WriteUID(){
 
         int uid;
 
@@ -152,7 +148,7 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
-    void Cancel(){
+    private void Cancel(){
         if (readuid != null) {
             readuid.cancel(true);
         }
@@ -165,7 +161,7 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
-    void Unbrick(View v){
+    private void Unbrick(View v){
 
         if(KeyTools.Busy){
             return;
@@ -192,14 +188,14 @@ public class CloneUIDFragment extends Fragment {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class UNBRICK extends AsyncTask<Integer, Integer, Integer> {
         KeyTools keytools;
         int i;
-        String s;
         byte block = 0;
 
 
-        protected UNBRICK(){
+        UNBRICK(){
             keytools = new KeyTools(1);
         }
 
@@ -340,26 +336,29 @@ public class CloneUIDFragment extends Fragment {
                     toast = Toast.makeText(getContext(), R.string.Метка_не_требует_восстановления, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.Метка_не_требует_восстановления));
+                    String s  = "\n" + getString(R.string.Метка_не_требует_восстановления);
+                    TextWin.setText(s);
                     break;
 
                 case 2:
                     toast = Toast.makeText(getContext(), R.string.Метка_восстановлена, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.Метка_восстановлена));
+                    s  = "\n" + getString(R.string.Метка_восстановлена);
+                    TextWin.setText(s);
                     break;
 
                 case 3:
-                    s = String.format(getString(R.string.Криптоключи_сброшены));
+                    s = getString(R.string.Криптоключи_сброшены);
                     toast = Toast.makeText(getContext(), s, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + s);
+                    s = "\n" + s;
+                    TextWin.setText(s);
                     break;
 
             }
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
@@ -369,13 +368,15 @@ public class CloneUIDFragment extends Fragment {
             toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\n" + getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.setText(s);
+            KeyTools.Busy = false;
             pd.dismiss();
         }
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class WriteUID extends AsyncTask<Integer, Integer, Integer> {
         KeyTools keytools;
         byte[] blockBuffer = new byte[16];
@@ -383,7 +384,7 @@ public class CloneUIDFragment extends Fragment {
         int i;
 
 
-        protected WriteUID() {
+        WriteUID() {
             keytools = new KeyTools(1);
         }
 
@@ -430,7 +431,7 @@ public class CloneUIDFragment extends Fragment {
                 if( i == 16){  // Если блок 0 содержит только 0x00
                     System.arraycopy(blockzero, 0, blockBuffer, 0, 16);
                 }
-                keytools.IntToByteArray(uid[0], blockBuffer, 0);
+                KeyTools.IntToByteArray(uid[0], blockBuffer, 0);
                 blockBuffer[4] = 0;
                 for(int i = 0; i < 4; i++){
                     blockBuffer[4] ^= blockBuffer[i];
@@ -496,13 +497,15 @@ public class CloneUIDFragment extends Fragment {
                     toast = Toast.makeText(getContext(), getString(R.string.Ошибка_чтения), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.Ошибка_чтения));
+                    String s = "\n" + getString(R.string.Ошибка_чтения);
+                    TextWin.setText(s);
                     break;
                 case -2:
                     toast = Toast.makeText(getContext(), getString(R.string.Ошибка_записи), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.Ошибка_записи));
+                    s = "\n" + getString(R.string.Ошибка_записи);
+                    TextWin.setText(s);
                     break;
                 case -1:
                     TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
@@ -514,10 +517,11 @@ public class CloneUIDFragment extends Fragment {
                     toast = Toast.makeText(getContext(), R.string.UID_записан, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.UID_записан));
+                    s = "\n" + getString(R.string.UID_записан);
+                    TextWin.setText(s);
                     break;
             }
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
@@ -527,17 +531,19 @@ public class CloneUIDFragment extends Fragment {
             toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\n" + getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.setText(s);
+            KeyTools.Busy = false;
             pd.dismiss();
         }
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class UID extends AsyncTask<Void, Void, Integer> {
         KeyTools keytools;
 
-        protected UID() {
+        UID() {
             keytools = new KeyTools(1);
         }
 
@@ -582,13 +588,14 @@ public class CloneUIDFragment extends Fragment {
                     toast = Toast.makeText(getContext(), R.string.UID_оригинала_считан, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
-                    TextWin.setText("\n" + getString(R.string.UID_оригинала_считан));
-                    String s = String.format("%08X", keytools.uid);
+                    String s = "\n" + getString(R.string.UID_оригинала_считан);
+                    TextWin.setText(s);
+                    s = String.format("%08X", keytools.uid);
                     TextUID.setText(s);
                     break;
                 default:
             }
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
@@ -598,8 +605,9 @@ public class CloneUIDFragment extends Fragment {
             toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            TextWin.setText("\n" + getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.setText(s);
+            KeyTools.Busy = false;
             pd.dismiss();
         }
     }

@@ -29,8 +29,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"
-            android:hint="1234ABCD"
-            android:text="1234ABCD"
+            android:hint="@string/ABCD1234"
+            android:text="@string/ABCD1234"
             android:inputType="textCapCharacters"
             android:digits="0123456789ABCDEF"
             android:singleLine="true"
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Считать с  Метки" />
+            android:text="@string/Считать_с_Метки" />
 
     </LinearLayout>
 
@@ -63,21 +63,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Записать UID" />
+            android:text="@string/Записать_UID" />
 
         <Button
             android:id="@+id/btnUnbrick"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Восстановить 0-й блок ZERO" />
+            android:text="@string/Восстановить_0_й_блок_ZERO" />
 
         <Button
             android:id="@+id/btnRestore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Сбросить криптоключи" />
+            android:text="@string/Сбросить_криптоключи" />
 
     </LinearLayout>
 
@@ -91,7 +91,7 @@
     <TextView
         android:id="@+id/textWin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="bottom"
         android:scrollbars="vertical"

@@ -1,5 +1,6 @@
 package com.example.keytools;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,10 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public class SettingsActivity extends AppCompatActivity {
 
     public static final String APP_PREFERENCES = "settings";
-//    public static final String APP_PREFERENCES_TIMEOUT = "timeout";
     public static final String APP_PREFERENCES_PAUSE = "pause";
     public static final String APP_PREFERENCES_NSNIFF = "nsniff";
-//    public static int timeout = 1000;
     public static int pause = 0;
     public static int nsniff = 2;
     private final int defnsniff = 2;
@@ -33,6 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText Pause;
 
 
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,8 +43,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         NumSniff= findViewById(R.id.NumSniff);
         Pause= findViewById(R.id.Pause);
-        NumSniff.setText(Integer.toString(nsniff));
-        Pause.setText(Integer.toString(pause));
+        NumSniff.setText(String.format("%d",nsniff));
+        Pause.setText(String.format("%d",pause));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -67,9 +67,10 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("DefaultLocale")
     private void Cancel(){
-        NumSniff.setText(Integer.toString(defnsniff));
-        Pause.setText(Integer.toString(defpause));
+        NumSniff.setText(String.format("%d",nsniff));
+        Pause.setText(String.format("%d",pause));
         nsniff = defnsniff;
         pause = defpause;
         SaveSettings(this);
@@ -77,6 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("DefaultLocale")
     private  void Apply(){
 
         try {
@@ -86,7 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 ns = 2;
-                NumSniff.setText(Integer.toString(ns));
+                NumSniff.setText(String.format("%d",nsniff));
             }
             nsniff = ns;
 
@@ -96,7 +98,7 @@ public class SettingsActivity extends AppCompatActivity {
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 np = 1500;
-                Pause.setText(Integer.toString(np));
+                Pause.setText(String.format("%d",pause));
             }
             pause = np;
             SaveSettings(this);
@@ -106,7 +108,6 @@ public class SettingsActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "Ошибка ввода !\n" + e.toString(), Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            return;
         }
     }
 
@@ -128,8 +129,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static boolean LoadSettings(Context context){
 
-        mSettings = context.getSharedPreferences(APP_PREFERENCES, context.MODE_PRIVATE);
-//        timeout = mSettings.getInt(APP_PREFERENCES_TIMEOUT, timeout);
+        mSettings = context.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE);
         pause = mSettings.getInt(APP_PREFERENCES_PAUSE, pause);
         nsniff = mSettings.getInt(APP_PREFERENCES_NSNIFF, nsniff);
 
@@ -138,9 +138,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static boolean SaveSettings(Context context){
 
-        mSettings = context.getSharedPreferences(APP_PREFERENCES, context.MODE_PRIVATE);
+        mSettings = context.getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor SetEditor = mSettings.edit();
-//        SetEditor.putInt(APP_PREFERENCES_TIMEOUT,timeout);
         SetEditor.putInt(APP_PREFERENCES_PAUSE,pause);
         SetEditor.putInt(APP_PREFERENCES_NSNIFF,nsniff);
         SetEditor.apply();

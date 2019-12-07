@@ -32,7 +32,7 @@ public class KeyTools {
 
     public Sniff[] sn;
     public String ErrMsg;
-    public byte error;
+    private byte error;
 
 
     public static class CryptoKey{
@@ -44,12 +44,12 @@ public class KeyTools {
 
     public static class Sniff {
         public byte filter;
-        public byte nkey;
-        public byte[] keyAB;
-        public byte[] blockNumber;
-        public int[] TagChall;
-        public int[] ReadChall;
-        public int[] ReadResp;
+        byte nkey;
+        byte[] keyAB;
+        byte[] blockNumber;
+        int[] TagChall;
+        int[] ReadChall;
+        int[] ReadResp;
     }
 
     public KeyTools(int nsn) {
@@ -201,10 +201,10 @@ public class KeyTools {
     }
 
 
-    boolean SerialRead(UsbSerialPort sPort, byte[] buffer, int timeout)throws IOException {
+    private boolean SerialRead(UsbSerialPort sPort, byte[] buffer, int timeout)throws IOException {
         long start = System.currentTimeMillis();
         byte[] b = new byte[128];
-        int a1 = 0, a2 = 0, i;
+        int a1, a2 = 0, i;
         buffer[2] = 127;
         do{
             a1 = sPort.read(b, timeout);
@@ -220,11 +220,11 @@ public class KeyTools {
     }
 
 
-    boolean GetInfo(UsbSerialPort sPort) throws IOException {
+    private boolean GetInfo(UsbSerialPort sPort) throws IOException {
 
         int lentgh = 9;
         byte[] writebuffer = new byte[3];
-        writebuffer[0] = (byte) CMD;
+        writebuffer[0] = CMD;
         writebuffer[1] = GETINFO;
         writebuffer[2] = 3;
         sPort.write(writebuffer, WRITE_TIMEOUT);
@@ -235,9 +235,7 @@ public class KeyTools {
             error = buffer[3];
             return false;
         }
-        for (int i = 0; i < 4; i++) {
-            info[i] = buffer[i + 3];
-        }
+        System.arraycopy(buffer, 3, info, 0, 4);
         return true;
     }
 
@@ -245,8 +243,8 @@ public class KeyTools {
     public boolean readuid(UsbSerialPort sPort) throws IOException {
 
         final int n = 3;
-        int l, lentgh = 7;
-        byte writebuffer[] = new byte[n];
+        int lentgh = 7;
+        byte[] writebuffer = new byte[n];
         writebuffer[0] = CMD;
         writebuffer[1] = GETUID;
         writebuffer[2] = n;
@@ -268,7 +266,7 @@ public class KeyTools {
     public boolean getsniff(UsbSerialPort sPort, int jsn) throws IOException {
 
         final int n = 7;
-        byte writebuffer[] = new byte[n];
+        byte[] writebuffer = new byte[n];
         writebuffer[0] = CMD;
         writebuffer[1] = GETSNIFF;
         writebuffer[2] = n;
@@ -314,7 +312,7 @@ public class KeyTools {
     public boolean authent(UsbSerialPort sPort, byte block, byte keyAB, long autent_key) throws IOException {
         final int n = 11;    //Длина запроса
         int lentgh = 3;         // Длина верного ответа
-        byte writebuffer[] = new byte[n];
+        byte[] writebuffer = new byte[n];
 
         writebuffer[0] = CMD;
         writebuffer[1] = AUTHENT;
@@ -338,7 +336,7 @@ public class KeyTools {
     public boolean readblock(UsbSerialPort sPort, byte block, byte[] data) throws IOException{
         final int n = 4;    //Длина запроса
         int lentgh = 19;         // Длина верного ответа
-        byte writebuffer[] = new byte[n];
+        byte[] writebuffer = new byte[n];
 
         writebuffer[0] = CMD;
         writebuffer[1] = READBLOCK;
@@ -353,9 +351,7 @@ public class KeyTools {
             error = buffer[3];
             return false;
         }
-        for(int i = 0; i < 16; i++){
-            data[ i ] = buffer [ i + 3];
-        }
+        System.arraycopy(buffer, 3, data, 0, 16);
         return true;
     }
 
@@ -363,15 +359,13 @@ public class KeyTools {
     public boolean writeblock(UsbSerialPort sPort, byte block, byte[] data) throws IOException{
         final int n = 20;    //Длина запроса
         int lentgh = 3;         // Длина верного ответа
-        byte writebuffer[] = new byte[n];
+        byte[] writebuffer = new byte[n];
 
         writebuffer[0] = CMD;
         writebuffer[1] = WRITEBLOCK;
         writebuffer[2] = n;
         writebuffer[3] = block;
-        for(int i = 0; i < 16; i++){
-            writebuffer[ i + 4 ] = data[ i ];
-        }
+        System.arraycopy(data, 0, writebuffer, 4, 16);
 
         sPort.write(writebuffer, WRITE_TIMEOUT);
         if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
@@ -390,7 +384,7 @@ public class KeyTools {
 
         int lentgh = 3;
         byte[] writebuffer = new byte[3];
-        writebuffer[0] = (byte) CMD;
+        writebuffer[0] = CMD;
         writebuffer[1] = UNLOCK;
         writebuffer[2] = 3;
         sPort.write(writebuffer, WRITE_TIMEOUT);

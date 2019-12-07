@@ -1,5 +1,6 @@
 package com.example.keytools.ui.sectorcopy;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -12,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +22,6 @@ import androidx.fragment.app.Fragment;
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
 import com.example.keytools.SettingsActivity;
-import com.example.usbserial.util.HexDump;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -34,16 +33,12 @@ public class SectorCopyFragment extends Fragment {
     private TextView TextWin;
     private TextView TexDump;
 
-    Button btnReadSector;
-    Button btnWriteSector;
-//    private EditText NumSniff;
-    ProgressDialog pd;
-    static byte[][] sectorbuffer = new byte[4][16];
-    static boolean emptyBuffer = true;
-    Toast toast;
+    private ProgressDialog pd;
+    public static byte[][] sectorbuffer = new byte[4][16];
+    public static boolean emptyBuffer = true;
 
-    READSECTOR readsector;
-    WRITESECTOR writesector;
+    private READSECTOR readsector;
+    private WRITESECTOR writesector;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,32 +52,22 @@ public class SectorCopyFragment extends Fragment {
         TexDump = root.findViewById(R.id.textDump);
         TexDump.setMovementMethod(new ScrollingMovementMethod());
         TexDump.setTextIsSelectable(true);
-        TexDump.setText("");
-        for(int i = 0; i < 4; i++){
-            if (i > 0) {
-                TexDump.append("\n");
-            }
-            TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
-        }
-
-//        NumSniff = root.findViewById(R.id.NumSniff);
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch(v.getId()){
                     case R.id.btnReadSector:
-                        ReadSector(v);
+                        ReadSector();
                         break;
                     case R.id.btnWriteSector:
-                        WriteSector(v);
+                        WriteSector();
                         break;
                 }
             }
         };
-        btnReadSector = (Button)root.findViewById(R.id.btnReadSector);
-        btnWriteSector = (Button)root.findViewById(R.id.btnWriteSector);
+        Button btnReadSector = root.findViewById(R.id.btnReadSector);
+        Button btnWriteSector = root.findViewById(R.id.btnWriteSector);
         btnReadSector.setOnClickListener(oclBtn);
         btnWriteSector.setOnClickListener(oclBtn);
 
@@ -107,11 +92,10 @@ public class SectorCopyFragment extends Fragment {
             }
             TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
         }
-//        NumSniff.setText(Integer.toString(SettingsActivity.nsniff));
     }
 
 
-    void Cancel(){
+    private void Cancel(){
         if (readsector != null) {
             readsector.cancel(true);
         }
@@ -121,19 +105,12 @@ public class SectorCopyFragment extends Fragment {
     }
 
 
-    void ReadSector(View v){
+    private void ReadSector(){
 
         if(KeyTools.Busy){
             return;
         }
         try {
-//            int nSniff = Integer.parseInt(NumSniff.getText().toString());
-//            if(nSniff < 2){
-//                Toast toast = Toast.makeText(this.getContext(), R.string.Ошибка_ввода_Число_захватов_меньше_2, Toast.LENGTH_LONG);
-//                toast.setGravity(Gravity.CENTER, 0, 0);
-//                toast.show();
-//                return;
-//            }
             readsector = new READSECTOR(SettingsActivity.nsniff);
         }catch(NumberFormatException e){
             Toast toast = Toast.makeText(this.getContext(), getString(R.string.Ошибка_ввода) + e.toString() , Toast.LENGTH_LONG);
@@ -153,7 +130,8 @@ public class SectorCopyFragment extends Fragment {
     }
 
 
-    void WriteSector(View v){
+    private void WriteSector(){
+        Toast toast;
         if(emptyBuffer){
             toast = Toast.makeText(this.getContext(), "Буфер для записи пуст" + "!" , Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
@@ -175,16 +153,15 @@ public class SectorCopyFragment extends Fragment {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class WRITESECTOR extends AsyncTask<Void, Integer, Integer> {
 
         KeyTools keytools;
         byte block = 0, AB = 0;
-        long crkey,defkey = 0xFFFFFFFFFFFFL;
-        String s;
-        Toast toast;
+        long defkey = 0xFFFFFFFFFFFFL;
         int i;
 
-        public WRITESECTOR() {
+        WRITESECTOR() {
             keytools = new KeyTools(1);
         }
 
@@ -317,7 +294,7 @@ public class SectorCopyFragment extends Fragment {
                 default:
                     break;
             }
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
@@ -326,12 +303,13 @@ public class SectorCopyFragment extends Fragment {
         protected void onCancelled(Integer arg) {
             super.onCancelled(arg);
             TextWin.append(getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class READSECTOR extends AsyncTask<Void, Integer, Integer> {
 
         KeyTools keytools;
@@ -340,11 +318,11 @@ public class SectorCopyFragment extends Fragment {
         byte block = 1;
         byte AB = 0;
         String s;
-        String StrKeyAB[] = {"Key A", "Key B"};
+        String[] StrKeyAB = {"Key A", "Key B"};
         int i;
 
 
-        public  READSECTOR(int n){
+        READSECTOR(int n){
             keytools = new KeyTools(n);
         }
 
@@ -363,7 +341,6 @@ public class SectorCopyFragment extends Fragment {
         @Override
         protected Integer doInBackground(Void... voids) {
             int uid;
-            int err, tagkod = 0;
 
             try{
                 while(!keytools.readuid(sPort)){        // Считывание UID
@@ -396,7 +373,9 @@ public class SectorCopyFragment extends Fragment {
                     }
                     publishProgress(4);
 
-                    waittag(uid);
+                    if(!waittag(uid)){      // Ожидание метки
+                        return null;
+                    }
                     crkey = 0;
                     for(i = 0; i < Crk.length; i++){
                         if(Crk[i].block != 1 || Crk[i].AB != 0){
@@ -420,7 +399,7 @@ public class SectorCopyFragment extends Fragment {
                         publishProgress(6);
                     }
                 }
-                keytools.KeyToByteArray(crkey, sectorbuffer[3], 0);         // Добавляем ключ
+                KeyTools.KeyToByteArray(crkey, sectorbuffer[3], 0);         // Добавляем ключ
 
             }catch(IOException e1){
                 try{
@@ -517,16 +496,14 @@ public class SectorCopyFragment extends Fragment {
                     break;
 
                 case -2:
-                    s = String.format(Locale.US,"\n"+getString(R.string.Найденные_ключи_не_подходят_к_этой_метке));
-                    TextWin.append(s);
+                    TextWin.append("\n"+getString(R.string.Найденные_ключи_не_подходят_к_этой_метке));
                     toast = Toast.makeText(getContext(), getString(R.string.Найденные_ключи_не_подходят_к_этой_метке), Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                     break;
 
                 case -3:
-                    s = String.format(Locale.US,"\n"+getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов));
-                    TextWin.append(s);
+                    TextWin.append("\n"+getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов));
                     toast = Toast.makeText(getContext(), getString(R.string.Ключи_не_найдены_Попробуйте_увеличить_число_захватов), Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
@@ -536,7 +513,7 @@ public class SectorCopyFragment extends Fragment {
                     break;
             }
 
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
 
         }
@@ -546,12 +523,12 @@ public class SectorCopyFragment extends Fragment {
         protected void onCancelled(Integer arg) {
             super.onCancelled(arg);
             TextWin.append(getString(R.string.Операция_прервана));
-            keytools.Busy = false;
+            KeyTools.Busy = false;
             pd.dismiss();
         }
 
 
-        protected boolean waittag(int uid) throws IOException {
+        boolean waittag(int uid) throws IOException {
             while(true) {
                 // Ждем метку
                 while( !keytools.readuid(sPort)) {
@@ -563,7 +540,6 @@ public class SectorCopyFragment extends Fragment {
                     break;
                 }
                 publishProgress(5);     //UID не совпадает! Попробуйте другую заготовку!
-
                 // Ждем пока уберут метку
                 while( keytools.readuid(sPort)) {
                     if (isCancelled()) {
@@ -573,6 +549,7 @@ public class SectorCopyFragment extends Fragment {
             }
             return true;
         }
+
     }
 
 }

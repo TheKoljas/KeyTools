@@ -15,7 +15,7 @@ public class Crapto1 {
         int odd, even;
     }
 
-    byte filterlut[] = new byte[1 << 20];
+    byte[] filterlut = new byte[1 << 20];
     int LF_POLY_ODD = 0x29CE5C;
     int LF_POLY_EVEN = 0x870804;
 
