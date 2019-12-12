@@ -19,6 +19,11 @@ public class KeyTools {
     private final static byte READBLOCK = 0x0A;
     private final static byte WRITEBLOCK = 0x0C;
     private final static byte UNLOCK = 0x0E;
+    private final static byte EMULATOR = 0x10;
+    private final static byte READ_CARD = 0x12;
+    private final static byte WRITE_CARD = 0x14;
+    private final static byte BREAK = 0x16;
+
 
     private final static char[] HEX_DIGITS = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
@@ -398,4 +403,80 @@ public class KeyTools {
         return true;
     }
 
+
+    public boolean emulator(UsbSerialPort sPort) throws IOException {
+
+        int lentgh = 3;
+        byte[] writebuffer = new byte[3];
+        writebuffer[0] = CMD;
+        writebuffer[1] = EMULATOR;
+        writebuffer[2] = 3;
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        return true;
+    }
+
+
+    public boolean readcard(UsbSerialPort sPort, byte block, byte[] data) throws IOException{
+        final int n = 4;    //Длина запроса
+        int lentgh = 19;         // Длина верного ответа
+        byte[] writebuffer = new byte[n];
+
+        writebuffer[0] = CMD;
+        writebuffer[1] = READ_CARD;
+        writebuffer[2] = n;
+        writebuffer[3] = block;
+
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
+            return false;
+        }
+        if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (READ_CARD + 1))) {
+            error = buffer[3];
+            return false;
+        }
+        System.arraycopy(buffer, 3, data, 0, 16);
+        return true;
+    }
+
+
+    public boolean writecard(UsbSerialPort sPort, byte block, byte[] data) throws IOException{
+        final int n = 20;    //Длина запроса
+        int lentgh = 3;         // Длина верного ответа
+        byte[] writebuffer = new byte[n];
+
+        writebuffer[0] = CMD;
+        writebuffer[1] = WRITE_CARD;
+        writebuffer[2] = n;
+        writebuffer[3] = block;
+        System.arraycopy(data, 0, writebuffer, 4, 16);
+
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
+            return false;
+        }
+        if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (WRITE_CARD + 1))) {
+            error = buffer[3];
+            return false;
+        }
+        return true;
+    }
+
+
+    public boolean break_emulator(UsbSerialPort sPort) throws IOException {
+
+        int lentgh = 3;
+        byte[] writebuffer = new byte[3];
+        writebuffer[0] = CMD;
+        writebuffer[1] = BREAK;
+        writebuffer[2] = 3;
+        sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
+            return false;
+        }
+        if ((buffer[0] != (CMD + 1)) || (buffer[1] != (BREAK + 1)) || (buffer[2] != lentgh)) {
+            error = buffer[3];
+            return false;
+        }
+        return true;
+    }
 }
