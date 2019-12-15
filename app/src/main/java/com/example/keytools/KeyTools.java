@@ -1,5 +1,7 @@
 package com.example.keytools;
 
+import android.widget.TextView;
+
 import java.io.IOException;
 
 import com.example.usbserial.driver.UsbSerialPort;
@@ -66,6 +68,32 @@ public class KeyTools {
     }
 
 
+    public static String BlockToString(byte[] block){
+        StringBuilder result = new StringBuilder();
+        byte b;
+
+        for(int i = 0; i < 16; i++){
+            b = block[i];
+            result.append(" ");
+            result.append(HEX_DIGITS[(b >>> 4) & 0x0F]);
+            result.append(HEX_DIGITS[b & 0x0F]);
+
+        }
+        return result.toString();
+    }
+
+
+    public static void PrintDump(byte[][] dump, TextView text){
+        text.setText("");
+        for( int i = 0; i < 16; i++){
+            text.append(String.format("\n    Сектор  №  %d :", i));
+            for(int j = 0; j < 4; j++){
+                text.append("\n     " + KeyTools.BlockToString(dump[j + i*4]));
+            }
+        }
+    }
+
+
     public CryptoKey[] CulcKeys(){
         Crapto1 cr = new Crapto1();
         CryptoKey[] Crk, crk1;
@@ -118,20 +146,6 @@ public class KeyTools {
         return true;
     }
 
-
-    public static String BlockToString(byte[] block){
-        StringBuilder result = new StringBuilder();
-        byte b;
-
-        for(int i = 0; i < 16; i++){
-            b = block[i];
-            result.append(" ");
-            result.append(HEX_DIGITS[(b >>> 4) & 0x0F]);
-            result.append(HEX_DIGITS[b & 0x0F]);
-
-        }
-        return result.toString();
-    }
 
 
     public static int ByteArrayToInt(byte[] b, int n) {
@@ -406,12 +420,19 @@ public class KeyTools {
 
     public boolean emulator(UsbSerialPort sPort) throws IOException {
 
-        int lentgh = 3;
+        int lentgh = 3;         // Длина верного ответа
         byte[] writebuffer = new byte[3];
         writebuffer[0] = CMD;
         writebuffer[1] = EMULATOR;
         writebuffer[2] = 3;
         sPort.write(writebuffer, WRITE_TIMEOUT);
+        if(!SerialRead(sPort,buffer, READ_TIMEOUT)){
+            return false;
+        }
+        if ((buffer[2] != lentgh) || (buffer[0] != (CMD + 1)) || (buffer[1] != (EMULATOR + 1))) {
+            error = buffer[3];
+            return false;
+        }
         return true;
     }
 

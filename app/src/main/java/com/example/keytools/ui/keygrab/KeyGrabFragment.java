@@ -47,7 +47,7 @@ public class KeyGrabFragment extends Fragment {
         progressBar = root.findViewById(R.id.progressBar);
         progressBar.setVisibility(ProgressBar.INVISIBLE);
 
-        TextWin = root.findViewById(R.id.textView4);
+        TextWin = root.findViewById(R.id.textWin);
         TextWin.setMovementMethod(new ScrollingMovementMethod());
         TextWin.setTextIsSelectable(true);
 

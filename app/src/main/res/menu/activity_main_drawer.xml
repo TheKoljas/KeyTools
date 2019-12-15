@@ -16,14 +16,14 @@
         <item
             android:id="@+id/nav_sectorcopy"
             android:title="@string/menu_sectorcopy" />
+        <item
+            android:id="@+id/nav_emulator"
+            android:title="@string/Эмуляция_Mifare_Classic" />
     </group>
 
 <!--    <item android:title="Communicate">-->
 <!--        <menu>-->
-<!--            <item-->
-<!--                android:id="@+id/nav_share"-->
-<!--                android:icon="@drawable/ic_menu_share"-->
-<!--                android:title="@string/menu_share" />-->
+
 <!--            <item-->
 <!--                android:id="@+id/nav_send"-->
 <!--                android:icon="@drawable/ic_menu_send"-->

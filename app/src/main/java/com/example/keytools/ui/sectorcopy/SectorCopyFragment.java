@@ -90,7 +90,7 @@ public class SectorCopyFragment extends Fragment {
             if (i > 0) {
                 TexDump.append("\n");
             }
-            TexDump.append(KeyTools.BlockToString(sectorbuffer[i]));
+            TexDump.append("    " + KeyTools.BlockToString(sectorbuffer[i]));
         }
     }
 
