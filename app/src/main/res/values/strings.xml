@@ -91,5 +91,9 @@
     <string name="Считывание_UID">Считывание UID</string>
     <string name="Число_захватов">Число захватов</string>
     <string name="Чтение_метки">Чтение метки</string>
+    <string name="Открыть_файл">Открыть файл</string>
+    <string name="Загрузить">Загрузить</string>
+    <string name="Прочитать">Прочитать</string>
+    <string name="Старт_эмулятора">Старт эмулятора</string>
 
 </resources>

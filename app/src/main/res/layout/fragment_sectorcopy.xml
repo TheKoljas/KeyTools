@@ -11,11 +11,24 @@
         android:layout_height="wrap_content"
         android:text="Считать сектор с оригинала" />
 
-    <Button
-        android:id="@+id/btnWriteSector"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Записать на заготовку" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnWriteSector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Записать на заготовку" />
+
+        <Button
+            android:id="@+id/btnEmul"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Эмулятор" />
+    </LinearLayout>
 
     <View
         android:id="@+id/divider"

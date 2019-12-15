@@ -18,10 +18,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
 import com.example.keytools.SettingsActivity;
+import com.example.keytools.ui.cloneuid.CloneUIDFragment;
+import com.example.keytools.ui.emulator.EmulatorFragment;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -63,13 +66,19 @@ public class SectorCopyFragment extends Fragment {
                     case R.id.btnWriteSector:
                         WriteSector();
                         break;
+                    case R.id.btnEmul:
+                        Emul(v);
+                        break;
                 }
             }
         };
         Button btnReadSector = root.findViewById(R.id.btnReadSector);
         Button btnWriteSector = root.findViewById(R.id.btnWriteSector);
+        Button btnEmul = root.findViewById(R.id.btnEmul);
+
         btnReadSector.setOnClickListener(oclBtn);
         btnWriteSector.setOnClickListener(oclBtn);
+        btnEmul.setOnClickListener(oclBtn);
 
         pd = new ProgressDialog(getActivity());
         pd.setCancelable(false);
@@ -79,6 +88,25 @@ public class SectorCopyFragment extends Fragment {
             }
         });
         return root;
+    }
+
+
+    void Emul(View v){
+
+        if(emptyBuffer){
+            Toast toast = Toast.makeText(this.getContext(), "Буфер для записи пуст" + "!" , Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return;
+        }
+        for(int i = 0; i < 4; i++){
+            System.arraycopy(sectorbuffer[i], 0, EmulatorFragment.dump[i], 0, 16);
+        }
+        for(int i = 7; i < 64; i += 4){
+            System.arraycopy(CloneUIDFragment.blockkey, 0, EmulatorFragment.dump[i], 0, 16);
+        }
+        EmulatorFragment.empty = false;
+        Navigation.findNavController(v).navigate(R.id.action_nav_sectorcopy_to_nav_emulator);
     }
 
 
@@ -300,9 +328,13 @@ public class SectorCopyFragment extends Fragment {
 
 
         @Override
-        protected void onCancelled(Integer arg) {
-            super.onCancelled(arg);
-            TextWin.append(getString(R.string.Операция_прервана));
+        protected void onCancelled() {
+            super.onCancelled();
+            Toast toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.append(s);
             KeyTools.Busy = false;
             pd.dismiss();
         }
@@ -520,9 +552,13 @@ public class SectorCopyFragment extends Fragment {
 
 
         @Override
-        protected void onCancelled(Integer arg) {
-            super.onCancelled(arg);
-            TextWin.append(getString(R.string.Операция_прервана));
+        protected void onCancelled() {
+            super.onCancelled();
+            Toast toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.append(s);
             KeyTools.Busy = false;
             pd.dismiss();
         }

@@ -442,9 +442,13 @@ public class WriteClassicFragment extends Fragment {
 
 
         @Override
-        protected void onCancelled(Integer arg) {
-            super.onCancelled(arg);
-            TextWin.append(getString(R.string.Операция_прервана));
+        protected void onCancelled() {
+            super.onCancelled();
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.append(s);
             KeyTools.Busy = false;
             pd.dismiss();
         }

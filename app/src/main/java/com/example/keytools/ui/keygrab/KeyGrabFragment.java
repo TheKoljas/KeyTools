@@ -245,6 +245,9 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
+            Toast toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             TextBar.setText(R.string.Операция_прервана);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;
@@ -308,6 +311,9 @@ public class KeyGrabFragment extends Fragment {
         @Override
         protected void onCancelled() {
             super.onCancelled();
+            Toast toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             TextBar.setText(R.string.Операция_прервана);
             progressBar.setVisibility(ProgressBar.INVISIBLE);
             keytools.Busy = false;

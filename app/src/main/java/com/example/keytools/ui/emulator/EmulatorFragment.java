@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import com.example.keytools.KeyTools;
 import com.example.keytools.OpenFileDialog;
 import com.example.keytools.R;
-import com.example.keytools.ui.writeclassic.WriteClassicFragment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,6 +27,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import static com.example.keytools.MainActivity.sPort;
 
@@ -37,8 +39,8 @@ public class EmulatorFragment extends Fragment {
     private TextView TextWin;
     private TextView TextFileName;
     private static String FileName;
-    private static byte[][] dump = new byte[64][16];
-    private static boolean empty = true;
+    public static byte[][] dump = new byte[64][16];
+    public static boolean empty = true;
     private KeyTools keytools;
     private ProgressDialog pd;
 
@@ -102,7 +104,7 @@ public class EmulatorFragment extends Fragment {
     }
 
 
-    void  WriteEmul(){
+    private void  WriteEmul(){
 
         if(KeyTools.Busy){
             return;
@@ -143,7 +145,7 @@ public class EmulatorFragment extends Fragment {
     }
 
 
-    void ReadEmul(){
+    private void ReadEmul(){
         if(KeyTools.Busy){
             return;
         }
@@ -213,13 +215,6 @@ public class EmulatorFragment extends Fragment {
         if(!KeyTools.Busy){
             return;
         }
-//        keytools = new KeyTools(1);
-//        if (!keytools.TestPort(sPort)) {
-//            Toast toast = Toast.makeText(this.getContext(), keytools.ErrMsg , Toast.LENGTH_LONG);
-//            toast.setGravity(Gravity.CENTER, 0, 0);
-//            toast.show();
-//            return;
-//        }
         try{
             if(!keytools.break_emulator(sPort)){
             Toast toast = Toast.makeText(this.getContext(), "Ошибка остановки эмуляции !" , Toast.LENGTH_LONG);
@@ -280,7 +275,16 @@ public class EmulatorFragment extends Fragment {
     }
 
     private void FileSave(){
-        File file = new File(getContext().getExternalFilesDir(null), "EmulatorDump.mfd");
+        if(empty){
+            Toast toast = Toast.makeText(this.getContext(), "Буфер дампа пуст!" , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return;
+        }
+        String filename = "dump_"
+                + (new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()))
+                .format(new Date()) + ".mfd";
+        File file = new File(getContext().getExternalFilesDir(null), filename);
         try
         {
             FileOutputStream fOut = new FileOutputStream(file);
@@ -291,6 +295,9 @@ public class EmulatorFragment extends Fragment {
             myOutWriter.flush();
             myOutWriter.close();
             fOut.close();
+            Toast toast = Toast.makeText(this.getContext(), "Файл успешно сохранен :\n" + file.toString() , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
         }
         catch (IOException e)
         {

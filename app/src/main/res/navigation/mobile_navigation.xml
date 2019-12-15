@@ -27,7 +27,11 @@
         android:id="@+id/nav_sectorcopy"
         android:name="com.example.keytools.ui.sectorcopy.SectorCopyFragment"
         android:label="@string/menu_sectorcopy"
-        tools:layout="@layout/fragment_sectorcopy" />
+        tools:layout="@layout/fragment_sectorcopy" >
+        <action
+            android:id="@+id/action_nav_sectorcopy_to_nav_emulator"
+            app:destination="@id/nav_emulator" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_emulator"
