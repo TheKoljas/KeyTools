@@ -12,7 +12,7 @@
     <string name="menu_cloneuid">Запись UID</string>
     <string name="menu_sectorcopy">Копирование сектора</string>
     <string name="Эмуляция_Mifare_Classic">Эмуляция Mifare Classic</string>
-    <string name="menu_send">Send</string>
+    <string name="menu_database">База меток</string>
 
     <string name="keytools">KeyTools</string>
 

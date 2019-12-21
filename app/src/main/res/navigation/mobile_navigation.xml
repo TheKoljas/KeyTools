@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_keygrab">
+    app:startDestination="@id/nav_database">
 
     <fragment
         android:id="@+id/nav_keygrab"
@@ -40,8 +40,8 @@
         tools:layout="@layout/fragment_emulator" />
 
     <fragment
-        android:id="@+id/nav_send"
-        android:name="com.example.keytools.ui.send.SendFragment"
-        android:label="@string/menu_send"
-        tools:layout="@layout/fragment_send" />
+        android:id="@+id/nav_database"
+        android:name="com.example.keytools.ui.database.DataBaseFragment"
+        android:label="@string/menu_database"
+        tools:layout="@layout/fragment_database" />
 </navigation>
