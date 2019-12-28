@@ -39,6 +39,7 @@ import com.example.keytools.ui.database.data.KeyBaseContract.UidKey;
 import com.example.keytools.ui.database.data.KeyBaseContract.Adresses;
 import com.example.keytools.ui.database.data.KeyBaseContract.KeyAdress;
 import com.example.keytools.ui.database.data.KeyBaseContract.Recovery;
+import com.example.keytools.ui.sectorcopy.SectorCopyFragment;
 
 public class DataBaseFragment extends Fragment {
 
@@ -52,9 +53,6 @@ public class DataBaseFragment extends Fragment {
     private String s;
     private static KeyBaseDbHelper mDbHelper ;
     private static int AdressIndex = 0;
-    private Cursor AdressCursor;
-    private Cursor UidCursor;
-    private Cursor KeyCursor;
 
     private KEYGRAB keygrab;
     private UID readuid;
@@ -76,8 +74,6 @@ public class DataBaseFragment extends Fragment {
         TextTagNumber = root.findViewById(R.id.textTagNumber);
         TextAdressTagNumber = root.findViewById(R.id.textAdressTagNumber);
         TextKod =  root.findViewById(R.id.textKod);
-        TextKod.setText("1234ABCD");
-        TextWin.append("");
 
         View.OnClickListener oclBtn = new View.OnClickListener() {
             @Override
@@ -149,6 +145,25 @@ public class DataBaseFragment extends Fragment {
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        int kod;
+        if(!SectorCopyFragment.emptyBuffer){
+            kod = 0xFF & SectorCopyFragment.sectorbuffer[1][0];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][1];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][2];
+            kod <<= 8;
+            kod |= 0xFF & SectorCopyFragment.sectorbuffer[1][3];
+        }else{
+            kod = 0x1234ABCD;
+        }
+        TextKod.setText(String.format("%08X", kod));
+    }
+
+
     private void Recovery(){
 
         if(KeyTools.Busy){
@@ -216,207 +231,6 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    @SuppressLint("StaticFieldLeak")
-    private class RECOVERY extends AsyncTask<Void, Integer, Integer> {
-
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        KeyTools keytools;
-        byte[] blockBuffer = new byte[16];
-        long crkey, defkey = 0xFFFFFFFFFFFFL;
-        byte block = 1;
-        byte AB;
-        String s;
-
-
-        RECOVERY(){
-            keytools = new KeyTools(1);
-        }
-
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            TextWin.setText("");
-            pd.setTitle("Запись метки");
-            pd.setMessage(getString(R.string.Поднесите_заготовку_Classic_к_устройству));
-            pd.show();
-            pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
-        }
-
-
-
-
-
-        @Override
-        protected Integer doInBackground(Void... avoid) {
-
-            try{
-                block = 1;
-                AB = 0;
-                while(true){
-                    while(!keytools.readuid(sPort)){        // Считывание UID
-                        if (isCancelled()) {
-                            return null;
-                        }
-                    }
-                    if((crkey = getRecoveryKey(keytools.uid)) == -1 ){
-                        publishProgress(1);
-                    }else{
-                        break;
-                    }
-
-                    while(keytools.readuid(sPort)){        // Ждем когда уберут метку
-                        if (isCancelled()) {
-                            return null;
-                        }
-                    }
-                }
-
-                while (0 != (writesector(crkey, defkey, 0, keytools.uid))) {    // Запись данных 0-го сектора
-                    if (isCancelled()) {
-                        return null;
-                    }
-                    publishProgress(2);
-                }
-
-
-            }catch(IOException e1){
-                try{
-                    sPort.close();
-                }catch(IOException e){
-                }
-                sPort = null;
-                return -1;
-            }
-
-            return 1;
-        }
-
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-
-            super.onProgressUpdate(values);
-            switch(values[0]){
-
-                case 0:
-                    toast = Toast.makeText(getContext(), "Сектор 0 закрыт" +
-                            "\n" + R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
-                    break;
-
-                case 1:
-                    toast = Toast.makeText(getContext(), "Этой метки нет в корзине " +
-                            "\n" + R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
-                    break;
-
-                case 2:
-                    pd.setMessage(getString(R.string.Ошибка_записи));
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(Integer arg) {
-            super.onPostExecute(arg);
-            switch(arg){
-                case 1:
-                    s = String.format(Locale.US,getString(R.string.Запись_успешно_завершена_KEY),crkey);
-                    TextWin.append(s);
-                    DeleteFromRecovery(keytools.uid);
-                    break;
-
-                case -1:
-                    TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
-                    TextWin.append("\n" + "Ошибка адаптера! Операция прервана!");
-                    toast = Toast.makeText(getContext(), "Ошибка адаптера! Операция прервана!", Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
-                    break;
-
-                default:
-                    break;
-            }
-
-            KeyTools.Busy = false;
-            pd.dismiss();
-
-        }
-
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            String s = "\n" + getString(R.string.Операция_прервана);
-            TextWin.append(s);
-            KeyTools.Busy = false;
-            pd.dismiss();
-        }
-
-
-        int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
-            byte block = 1;
-            byte AB = 0;
-            crkey = oldkey;
-            if(!keytools.readuid(sPort)){
-                return -1;
-            }
-            if (uid != keytools.uid) {
-                publishProgress(5);
-                while(keytools.readuid(sPort));
-                return -1;
-            }
-
-            if(!keytools.authent(sPort, block, AB, oldkey)){
-                return -2;
-            }
-
-            clrbuf(blockBuffer);
-            KeyTools.IntToByteArray(kod, blockBuffer, 0);
-
-            block = 1;
-            if(!keytools.writeblock(sPort,block, blockBuffer)){
-                return -3;
-            }
-
-            block = 3;
-            if(!keytools.readblock(sPort, block, blockBuffer)){
-                return -4;
-            }
-            KeyTools.KeyToByteArray(newkey, blockBuffer, 0);
-            if(!keytools.writeblock(sPort, block, blockBuffer)){
-                return -5;
-            }
-
-            block = 1;
-            crkey = newkey;
-            if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
-                    || !keytools.readblock(sPort, block, blockBuffer)){
-                return -6;
-            }
-            return 0;
-        }
-
-
-        void clrbuf(byte[] buf){
-            for(int i = 0; i < buf.length; i++){
-                buf[i] = 0;             }
-        }
-
-
-    }
-
-
     private static void DeleteFromRecovery(int uid){
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -481,7 +295,7 @@ public class DataBaseFragment extends Fragment {
         }
 
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        KeyCursor = db.query(
+        Cursor cursor = db.query(
                 KeyAdress.TABLE_NAME,
                 null,
                 KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex,
@@ -491,14 +305,14 @@ public class DataBaseFragment extends Fragment {
                 null
         );
         try{
-            if(KeyCursor.getCount() == 0){
+            if(cursor.getCount() == 0){
                 toast = Toast.makeText(this.getContext(), "База меток пуста !", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
         }finally {
-            KeyCursor.close();
+            cursor.close();
         }
 
 
@@ -575,23 +389,21 @@ public class DataBaseFragment extends Fragment {
                 + KeyAdress.TABLE_NAME
                 + " WHERE "
                 + KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex;
-
+        Cursor cursor = db.rawQuery(SQL_QUERY, null);
         try {
-            UidCursor = db.rawQuery(SQL_QUERY, null);
-            if(UidCursor.getCount() == 0){
+
+            if(cursor.getCount() == 0){
                 toast = Toast.makeText(getContext(), "Все ключи для этого адреса рассчитаны!", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 return;
             }
-            int uidColumnIndex = UidCursor.getColumnIndex(UidKey.COLUMN_UID);
+            int uidColumnIndex = cursor.getColumnIndex(UidKey.COLUMN_UID);
 
-            keygrab = new KEYGRAB();
-            keygrab.crd = new Crapto1.CraptoData[UidCursor.getCount()];
+            keygrab = new KEYGRAB(SettingsActivity.nsniff, cursor.getCount());
             int i= 0;
-            while (UidCursor.moveToNext()) {
-                keygrab.crd[i] = new Crapto1.CraptoData();
-                keygrab.crd[i++].uid = UidCursor.getInt(uidColumnIndex);
+            while (cursor.moveToNext()) {
+                keygrab.crd[i++].uid = cursor.getInt(uidColumnIndex);
             }
         }
         catch (RuntimeException e){
@@ -603,7 +415,7 @@ public class DataBaseFragment extends Fragment {
             return;
         }
         finally {
-            UidCursor.close();
+            cursor.close();
         }
 
         if (!keygrab.keytools.TestPort(sPort)) {
@@ -638,16 +450,15 @@ public class DataBaseFragment extends Fragment {
                 + KeyAdress.TABLE_NAME
                 + " WHERE "
                 + KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex;
-
+        Cursor cursor = db.rawQuery(SQL_QUERY, null);
         try {
-            UidCursor = db.rawQuery(SQL_QUERY, null);
-            TextWin.append("\n\nДобавлено  " + UidCursor.getCount() + " меток.\n\n");
+            TextWin.append("\n\nДобавлено  " + cursor.getCount() + " меток.\n\n");
             // Узнаем индекс каждого столбца
-            int uidColumnIndex = UidCursor.getColumnIndex(UidKey.COLUMN_UID);
+            int uidColumnIndex = cursor.getColumnIndex(UidKey.COLUMN_UID);
             ContentValues values = new ContentValues();
             // Проходим через все ряды
-            while (UidCursor.moveToNext()) {
-                int currentUID = UidCursor.getInt(uidColumnIndex);
+            while (cursor.moveToNext()) {
+                int currentUID = cursor.getInt(uidColumnIndex);
                 TextWin.append("\n" +  String.format("%08X", currentUID));
                 values.put(KeyAdress.COLUMN_UID, currentUID);
                 values.put(KeyAdress.COLUMN_KEYADRESS, AdressIndex);
@@ -664,7 +475,7 @@ public class DataBaseFragment extends Fragment {
         }
         finally {
             // Всегда закрываем курсор после чтения
-            UidCursor.close();
+            cursor.close();
         }
     }
 
@@ -673,7 +484,7 @@ public class DataBaseFragment extends Fragment {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Делаем запрос
-        UidCursor = db.query(
+        Cursor cursor = db.query(
                 UidKey.TABLE_NAME,   // таблица
                 null,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -684,7 +495,7 @@ public class DataBaseFragment extends Fragment {
 
 
         try {
-            if(!UidCursor.moveToFirst()){
+            if(!cursor.moveToFirst()){
                 toast = Toast.makeText(getContext(), "База меток пуста !", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
@@ -699,7 +510,7 @@ public class DataBaseFragment extends Fragment {
                     KeyAdress.COLUMN_UID + " = " + uid,
                     null);
 
-            UidCursor = db.query(
+            cursor = db.query(
                     UidKey.TABLE_NAME,   // таблица
                     null,            // столбцы
                     null,                  // столбцы для условия WHERE
@@ -707,7 +518,7 @@ public class DataBaseFragment extends Fragment {
                     null,                  // Don't group the rows
                     null,                  // Don't filter by row groups
                     null);                   // порядок сортировки
-            if(!UidCursor.moveToFirst()) {
+            if(!cursor.moveToFirst()) {
                 toast = Toast.makeText(getContext(), "База меток пуста !", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
@@ -729,7 +540,7 @@ public class DataBaseFragment extends Fragment {
         }
             finally {
             // Всегда закрываем курсор после чтения
-            UidCursor.close();
+            cursor.close();
         }
         ShowDef();
     }
@@ -757,8 +568,6 @@ public class DataBaseFragment extends Fragment {
     private void deleteStringAdress(){
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        try {
-
             db.delete(
                     Adresses.TABLE_NAME,
                     "_id = " + AdressIndex,
@@ -767,7 +576,7 @@ public class DataBaseFragment extends Fragment {
                     KeyAdress.TABLE_NAME,
                     KeyAdress.COLUMN_KEYADRESS + " = " + AdressIndex,
                     null);
-            AdressCursor = db.query(
+            Cursor cursor = db.query(
                     Adresses.TABLE_NAME,   // таблица
                     null,            // столбцы
                     null,                  // столбцы для условия WHERE
@@ -775,10 +584,10 @@ public class DataBaseFragment extends Fragment {
                     null,                  // Don't group the rows
                     null,                  // Don't filter by row groups
                     null);                   // порядок сортировки
-
-            int idColumnIndex = AdressCursor.getColumnIndex(Adresses._ID);
-            int adressColumnIndex = AdressCursor.getColumnIndex(Adresses.COLUMN_ADRESS);
-            if(!AdressCursor.moveToFirst()){
+        try {
+            int idColumnIndex = cursor.getColumnIndex(Adresses._ID);
+            int adressColumnIndex = cursor.getColumnIndex(Adresses.COLUMN_ADRESS);
+            if(!cursor.moveToFirst()){
                 toast = Toast.makeText(getContext(), "База адресов пуста !", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
@@ -791,8 +600,8 @@ public class DataBaseFragment extends Fragment {
                         + 0 +" WHERE NAME='" + KeyAdress.TABLE_NAME +"'";
                 db.execSQL(SQL_CREATE_KEYADRESS_TABLE);
             }else{
-                AdressIndex = AdressCursor.getInt(idColumnIndex);
-                s = AdressCursor.getString(adressColumnIndex);
+                AdressIndex = cursor.getInt(idColumnIndex);
+                s = cursor.getString(adressColumnIndex);
                 TextAdress.setText(s);
             }
 
@@ -804,7 +613,7 @@ public class DataBaseFragment extends Fragment {
             TextWin.append(e.toString());
         }
         finally {
-            AdressCursor.close();
+            cursor.close();
         }
     }
 
@@ -812,7 +621,7 @@ public class DataBaseFragment extends Fragment {
     private void SelectAdress(){
 
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        AdressCursor = db.query(
+        Cursor cursor = db.query(
                 Adresses.TABLE_NAME,   // таблица
                 null,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -822,7 +631,7 @@ public class DataBaseFragment extends Fragment {
                 Adresses.COLUMN_ADRESS );                   // порядок сортировки
             AlertDialog.Builder adb = new AlertDialog.Builder(getContext())
                     .setTitle("Выберите адрес :")
-                    .setCursor(AdressCursor, myClickListener, Adresses.COLUMN_ADRESS);
+                    .setCursor(cursor, myClickListener, Adresses.COLUMN_ADRESS);
             adb.show();
     }
 
@@ -831,10 +640,24 @@ public class DataBaseFragment extends Fragment {
 
     private DialogInterface.OnClickListener myClickListener = new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int which) {
-            AdressCursor.moveToPosition(which);
-            int idColumnIndex = AdressCursor.getColumnIndex(Adresses._ID);
-            AdressIndex = AdressCursor.getInt(idColumnIndex);
-            ShowDef();
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            Cursor cursor = db.query(
+                    Adresses.TABLE_NAME,   // таблица
+                    null,            // столбцы
+                    null,                  // столбцы для условия WHERE
+                    null,                  // значения для условия WHERE
+                    null,                  // Don't group the rows
+                    null,                  // Don't filter by row groups
+                    Adresses.COLUMN_ADRESS );
+            try{
+                cursor.moveToPosition(which);
+                int idColumnIndex = cursor.getColumnIndex(Adresses._ID);
+                AdressIndex = cursor.getInt(idColumnIndex);
+                ShowDef();
+            }finally {
+                cursor.close();
+            }
+
         }
     };
 
@@ -912,7 +735,7 @@ public class DataBaseFragment extends Fragment {
         String[] projection = {
                 UidKey._ID,
                 UidKey.COLUMN_UID };
-        UidCursor = db.query(
+        Cursor cursor = db.query(
                 UidKey.TABLE_NAME,   // таблица
                 projection,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -922,14 +745,14 @@ public class DataBaseFragment extends Fragment {
                 null);                   // порядок сортировки
 
         try {
-            s = "" + UidCursor.getCount();
+            s = "" + cursor.getCount();
             TextTagNumber.setText( s );
         } finally {
-            UidCursor.close();
+            cursor.close();
         }
 
 
-        AdressCursor = db.query(
+        cursor = db.query(
                 Adresses.TABLE_NAME,   // таблица
                 null,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -938,20 +761,20 @@ public class DataBaseFragment extends Fragment {
                 null,                  // Don't filter by row groups
                 null);                   // порядок сортировки
         try {
-            int idColumnIndex = AdressCursor.getColumnIndex(Adresses._ID);
-            int adressColumnIndex = AdressCursor.getColumnIndex(Adresses.COLUMN_ADRESS);
+            int idColumnIndex = cursor.getColumnIndex(Adresses._ID);
+            int adressColumnIndex = cursor.getColumnIndex(Adresses.COLUMN_ADRESS);
             if(AdressIndex == 0){
-                if(!AdressCursor.moveToLast()){
+                if(!cursor.moveToLast()){
                     toast = Toast.makeText(getContext(), "База адресов пуста !", Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
                 }else{
-                    AdressIndex = AdressCursor.getInt(idColumnIndex);
-                    String s = AdressCursor.getString(adressColumnIndex);
+                    AdressIndex = cursor.getInt(idColumnIndex);
+                    String s = cursor.getString(adressColumnIndex);
                     TextAdress.setText(s);
                 }
             }else{
-                AdressCursor = db.query(
+                cursor = db.query(
                         Adresses.TABLE_NAME,   // таблица
                         null,            // столбцы
                         Adresses._ID + "=" + AdressIndex, // столбцы для условия WHERE
@@ -959,16 +782,16 @@ public class DataBaseFragment extends Fragment {
                         null,                  // Don't group the rows
                         null,                  // Don't filter by row groups
                         null);                   // порядок сортировки
-                AdressCursor.moveToFirst();
-                String s = AdressCursor.getString(adressColumnIndex);
+                cursor.moveToFirst();
+                String s = cursor.getString(adressColumnIndex);
                 TextAdress.setText(s);
             }
 
         } finally {
-            AdressCursor.close();
+            cursor.close();
         }
 
-        KeyCursor = db.query(
+        cursor = db.query(
                 KeyAdress.TABLE_NAME,
                 null,
                 KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex,
@@ -977,8 +800,13 @@ public class DataBaseFragment extends Fragment {
                 null,
                 null
         );
-        s = "" + KeyCursor.getCount();
-        TextAdressTagNumber.setText(s);
+        try{
+            s = "" + cursor.getCount();
+            TextAdressTagNumber.setText(s);
+        }finally {
+            cursor.close();
+        }
+
     }
 
 
@@ -991,7 +819,7 @@ public class DataBaseFragment extends Fragment {
                 UidKey.COLUMN_UID };
 
         // Делаем запрос
-        UidCursor = db.query(
+        Cursor cursor = db.query(
                 UidKey.TABLE_NAME,   // таблица
                 projection,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -1002,27 +830,27 @@ public class DataBaseFragment extends Fragment {
 
 
         try {
-            s = "Таблица содержит " + UidCursor.getCount() + " меток.\n\n";
+            s = "Таблица содержит " + cursor.getCount() + " меток.\n\n";
             TextWin.setText(s);
             TextWin.append(UidKey._ID + " - " +
                     UidKey.COLUMN_UID + "\n");
 
             // Узнаем индекс каждого столбца
-            int idColumnIndex = UidCursor.getColumnIndex(UidKey._ID);
-            int uidColumnIndex = UidCursor.getColumnIndex(UidKey.COLUMN_UID);
+            int idColumnIndex = cursor.getColumnIndex(UidKey._ID);
+            int uidColumnIndex = cursor.getColumnIndex(UidKey.COLUMN_UID);
 
             // Проходим через все ряды
-            while (UidCursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 // Используем индекс для получения строки или числа
-                int currentID = UidCursor.getInt(idColumnIndex);
-                int currentUID = UidCursor.getInt(uidColumnIndex);
+                int currentID = cursor.getInt(idColumnIndex);
+                int currentUID = cursor.getInt(uidColumnIndex);
                 // Выводим значения каждого столбца
                 TextWin.append(("\n" + currentID + " - " + String.format("%08X", currentUID)
                         ));
             }
         } finally {
             // Всегда закрываем курсор после чтения
-            UidCursor.close();
+            cursor.close();
         }
 
         String[] projection1 = {
@@ -1030,7 +858,7 @@ public class DataBaseFragment extends Fragment {
                 Adresses.COLUMN_ADRESS };
 
         // Делаем запрос
-        AdressCursor = db.query(
+        cursor = db.query(
                 Adresses.TABLE_NAME,   // таблица
                 projection1,            // столбцы
                 null,                  // столбцы для условия WHERE
@@ -1041,32 +869,32 @@ public class DataBaseFragment extends Fragment {
 
 
         try {
-            TextWin.append("\n\nТаблица содержит " + AdressCursor.getCount() + " Адресов.\n\n");
+            TextWin.append("\n\nТаблица содержит " + cursor.getCount() + " Адресов.\n\n");
             TextWin.append(Adresses._ID + " - " +
                     Adresses.COLUMN_ADRESS + "\n");
 
             // Узнаем индекс каждого столбца
-            int idColumnIndex = AdressCursor.getColumnIndex(Adresses._ID);
-            int uidColumnIndex = AdressCursor.getColumnIndex(Adresses.COLUMN_ADRESS);
+            int idColumnIndex = cursor.getColumnIndex(Adresses._ID);
+            int uidColumnIndex = cursor.getColumnIndex(Adresses.COLUMN_ADRESS);
 
             // Проходим через все ряды
-            while (AdressCursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 // Используем индекс для получения строки или числа
-                int currentID = AdressCursor.getInt(idColumnIndex);
-                String s = AdressCursor.getString(uidColumnIndex);
+                int currentID = cursor.getInt(idColumnIndex);
+                String s = cursor.getString(uidColumnIndex);
                 // Выводим значения каждого столбца
                 TextWin.append(("\n" + currentID + " - " + s
                 ));
             }
         } finally {
             // Всегда закрываем курсор после чтения
-            AdressCursor.close();
+            cursor.close();
         }
 
 
 
         // Делаем запрос
-        KeyCursor = db.query(
+        cursor = db.query(
                 KeyAdress.TABLE_NAME,   // таблица
                 null,            // столбцы
 //                KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex,                  // столбцы для условия WHERE
@@ -1078,25 +906,25 @@ public class DataBaseFragment extends Fragment {
 
 
         try {
-            TextWin.append("\n\nТаблица содержит " + KeyCursor.getCount() + " ключей.\n\n");
+            TextWin.append("\n\nТаблица содержит " + cursor.getCount() + " ключей.\n\n");
             TextWin.append(KeyAdress._ID + " - "
                     + KeyAdress.COLUMN_KEYADRESS + " - "
                     +  KeyAdress.COLUMN_UID + " - "
                     + KeyAdress.COLUMN_CRYPTOKEY);
 
             // Узнаем индекс каждого столбца
-            int idColumnIndex = KeyCursor.getColumnIndex(KeyAdress._ID);
-            int keyadressColumnIndex = KeyCursor.getColumnIndex(KeyAdress.COLUMN_KEYADRESS);
-            int uidkeyColumnIndex = KeyCursor.getColumnIndex(KeyAdress.COLUMN_UID);
-            int cryptokeyColumnIndex = KeyCursor.getColumnIndex(KeyAdress.COLUMN_CRYPTOKEY);
+            int idColumnIndex = cursor.getColumnIndex(KeyAdress._ID);
+            int keyadressColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_KEYADRESS);
+            int uidkeyColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_UID);
+            int cryptokeyColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_CRYPTOKEY);
 
             // Проходим через все ряды
-            while (KeyCursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 // Используем индекс для получения строки или числа
-                int currentID = KeyCursor.getInt(idColumnIndex);
-                int currentKEYADRESS = KeyCursor.getInt(keyadressColumnIndex);
-                int currentUIDKEY = KeyCursor.getInt(uidkeyColumnIndex);
-                long currentCRYPTOKEY = KeyCursor.getLong(cryptokeyColumnIndex);
+                int currentID = cursor.getInt(idColumnIndex);
+                int currentKEYADRESS = cursor.getInt(keyadressColumnIndex);
+                int currentUIDKEY = cursor.getInt(uidkeyColumnIndex);
+                long currentCRYPTOKEY = cursor.getLong(cryptokeyColumnIndex);
                 // Выводим значения каждого столбца
                 TextWin.append(("\n" + currentID + " - "
                         + currentKEYADRESS + " - "
@@ -1105,11 +933,11 @@ public class DataBaseFragment extends Fragment {
             }
         } finally {
             // Всегда закрываем курсор после чтения
-            KeyCursor.close();
+            cursor.close();
         }
 
         // Делаем запрос
-        Cursor cursor = db.query(
+        cursor = db.query(
                 Recovery.TABLE_NAME,   // таблица
                 null,            // столбцы
                 null,
@@ -1217,14 +1045,25 @@ public class DataBaseFragment extends Fragment {
     @SuppressLint("StaticFieldLeak")
     class KEYGRAB extends AsyncTask<Void, Integer, Integer>{
 
-        KeyTools keytools = new KeyTools(2);
+        KeyTools keytools;
         Crapto1 cr = new Crapto1();
         Crapto1.CraptoData[]  crd;
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         String  s;
         int numkey = 0;
 
+        KEYGRAB(int n, int m){
+            keytools = new KeyTools(n);
+            crd = new Crapto1.CraptoData[m];
+            for(int i = 0; i < m; i++){
+                crd[i] = new Crapto1.CraptoData();
+                crd[i].chal = new int[n];
+                crd[i].rchal = new int[n];
+                crd[i].rresp = new int[n];
 
+            }
+
+        }
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -1248,13 +1087,10 @@ public class DataBaseFragment extends Fragment {
                                 return null;
                             }
                         }
+                        crd[i].chal[j] = keytools.sn[j].TagChall[0];
+                        crd[i].rchal[j] = keytools.sn[j].ReadChall[0];
+                        crd[i].rresp[j] = keytools.sn[j].ReadResp[0];
                     }
-                    crd[i].chal = keytools.sn[0].TagChall[0];
-                    crd[i].rchal = keytools.sn[0].ReadChall[0];
-                    crd[i].rresp = keytools.sn[0].ReadResp[0];
-                    crd[i].chal2 = keytools.sn[1].TagChall[0];
-                    crd[i].rchal2 = keytools.sn[1].ReadChall[0];
-                    crd[i].rresp2 = keytools.sn[1].ReadResp[0];
                     if( i < crd.length - 1){
                         publishProgress(1, i );
                     }
@@ -1268,14 +1104,22 @@ public class DataBaseFragment extends Fragment {
                 return -1;
             }
             ContentValues values = new ContentValues();
-            for(int i = 0; i < crd.length; i++){
-                publishProgress(2, i );
-                if(cr.RecoveryKey(crd[i])){
-                    values.put(KeyAdress.COLUMN_UID, crd[i].uid);
-                    values.put(KeyAdress.COLUMN_KEYADRESS, AdressIndex);
-                    values.put(KeyAdress.COLUMN_CRYPTOKEY, crd[i].key);
-                    long newRowId = db.insert(KeyAdress.TABLE_NAME, null, values);
-                    numkey++;
+            for (int i = 0; i < crd.length; i++) {
+                publishProgress(2, i);
+                out:
+                {
+                    for (int j1 = 0; j1 < (keytools.nSniff - 1); j1++) {
+                        for (int j2 = (j1 + 1); j2 < keytools.nSniff; j2++) {
+                            if (cr.RecoveryKey(crd[i], j1, j2)) {
+                                values.put(KeyAdress.COLUMN_UID, crd[i].uid);
+                                values.put(KeyAdress.COLUMN_KEYADRESS, AdressIndex);
+                                values.put(KeyAdress.COLUMN_CRYPTOKEY, crd[i].key);
+                                long newRowId = db.insert(KeyAdress.TABLE_NAME, null, values);
+                                numkey++;
+                                break out;
+                            }
+                        }
+                    }
                 }
             }
             return 1;
@@ -1651,6 +1495,9 @@ public class DataBaseFragment extends Fragment {
                 case 1:
                     s = String.format(Locale.US,getString(R.string.Запись_успешно_завершена_KEY),crkey);
                     TextWin.append(s);
+                    toast = Toast.makeText(getContext(), s, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                     DeleteUid(keytools.uid);
                     AddToRecovery(keytools.uid, crkey);
                     break;
@@ -1739,10 +1586,207 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    @Override
-    public void onStop() {
-        AdressCursor.close();
-        UidCursor.close();
-        super.onStop();
+    @SuppressLint("StaticFieldLeak")
+    private class RECOVERY extends AsyncTask<Void, Integer, Integer> {
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        KeyTools keytools;
+        byte[] blockBuffer = new byte[16];
+        long crkey, defkey = 0xFFFFFFFFFFFFL;
+        byte block = 1;
+        byte AB;
+        String s;
+
+
+        RECOVERY(){
+            keytools = new KeyTools(1);
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            TextWin.setText("");
+            pd.setTitle("Запись метки");
+            pd.setMessage(getString(R.string.Поднесите_заготовку_Classic_к_устройству));
+            pd.show();
+            pd.getButton(Dialog.BUTTON_NEGATIVE).setVisibility(View.VISIBLE);
+        }
+
+
+
+
+
+        @Override
+        protected Integer doInBackground(Void... avoid) {
+
+            try{
+                block = 1;
+                AB = 0;
+                while(true){
+                    while(!keytools.readuid(sPort)){        // Считывание UID
+                        if (isCancelled()) {
+                            return null;
+                        }
+                    }
+                    if((crkey = getRecoveryKey(keytools.uid)) == -1 ){
+                        publishProgress(1);
+                    }else{
+                        break;
+                    }
+
+                    while(keytools.readuid(sPort)){        // Ждем когда уберут метку
+                        if (isCancelled()) {
+                            return null;
+                        }
+                    }
+                }
+
+                while (0 != (writesector(crkey, defkey, 0, keytools.uid))) {    // Запись данных 0-го сектора
+                    if (isCancelled()) {
+                        return null;
+                    }
+                    publishProgress(2);
+                }
+
+
+            }catch(IOException e1){
+                try{
+                    sPort.close();
+                }catch(IOException e){
+                }
+                sPort = null;
+                return -1;
+            }
+
+            return 1;
+        }
+
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+
+            super.onProgressUpdate(values);
+            switch(values[0]){
+
+                case 0:
+                    toast = Toast.makeText(getContext(), "Сектор 0 закрыт" +
+                            "\n" + R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+
+                case 1:
+                    toast = Toast.makeText(getContext(), "Этой метки нет в корзине " +
+                            "\n" + R.string.Запись_на_эту_метку_невозможна_Поменяйте_метку, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+
+                case 2:
+                    pd.setMessage(getString(R.string.Ошибка_записи));
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(Integer arg) {
+            super.onPostExecute(arg);
+            switch(arg){
+                case 1:
+                    s = "Метка успешно восстановлена !";
+                    TextWin.append(s);
+                    toast = Toast.makeText(getContext(), s, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    DeleteFromRecovery(keytools.uid);
+                    break;
+
+                case -1:
+                    TextWin.append(getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    TextWin.append("\n" + "Ошибка адаптера! Операция прервана!");
+                    toast = Toast.makeText(getContext(), "Ошибка адаптера! Операция прервана!", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+
+                default:
+                    break;
+            }
+
+            KeyTools.Busy = false;
+            pd.dismiss();
+
+        }
+
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            toast = Toast.makeText(getContext(), getString(R.string.Операция_прервана), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            String s = "\n" + getString(R.string.Операция_прервана);
+            TextWin.append(s);
+            KeyTools.Busy = false;
+            pd.dismiss();
+        }
+
+
+        int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
+            byte block = 1;
+            byte AB = 0;
+            crkey = oldkey;
+            if(!keytools.readuid(sPort)){
+                return -1;
+            }
+            if (uid != keytools.uid) {
+                publishProgress(5);
+                while(keytools.readuid(sPort));
+                return -1;
+            }
+
+            if(!keytools.authent(sPort, block, AB, oldkey)){
+                return -2;
+            }
+
+            clrbuf(blockBuffer);
+            KeyTools.IntToByteArray(kod, blockBuffer, 0);
+
+            block = 1;
+            if(!keytools.writeblock(sPort,block, blockBuffer)){
+                return -3;
+            }
+
+            block = 3;
+            if(!keytools.readblock(sPort, block, blockBuffer)){
+                return -4;
+            }
+            KeyTools.KeyToByteArray(newkey, blockBuffer, 0);
+            if(!keytools.writeblock(sPort, block, blockBuffer)){
+                return -5;
+            }
+
+            block = 1;
+            crkey = newkey;
+            if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
+                    || !keytools.readblock(sPort, block, blockBuffer)){
+                return -6;
+            }
+            return 0;
+        }
+
+
+        void clrbuf(byte[] buf){
+            for(int i = 0; i < buf.length; i++){
+                buf[i] = 0;             }
+        }
+
+
     }
+
 }

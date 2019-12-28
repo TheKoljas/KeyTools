@@ -13,12 +13,9 @@ public class Crapto1 {
 
     public  static class CraptoData {
         public int uid;
-        public int chal;
-        public int rchal;
-        public int rresp;
-        public int chal2;
-        public int rchal2;
-        public int rresp2;
+        public int[] chal;
+        public int[] rchal;
+        public int[] rresp;
         public long key;
     }
 
@@ -31,21 +28,21 @@ public class Crapto1 {
     int LF_POLY_EVEN = 0x870804;
 
 
-    public boolean RecoveryKey(CraptoData cd) {
+    public boolean RecoveryKey(CraptoData cd, int i, int j) {
 
         Crypto1State s[];
         int  t;
 
-        s = lfsr_recovery32(cd.rresp ^ prng_successor(cd.chal, 64), 0);
+        s = lfsr_recovery32(cd.rresp[i] ^ prng_successor(cd.chal[i], 64), 0);
 
         for(t = 0; (s[t].odd != 0) | (s[t].even != 0); ++t) {
             lfsr_rollback_word(s, t, 0, 0);
-            lfsr_rollback_word(s, t, cd.rchal, 1);
-            lfsr_rollback_word(s, t, cd.uid ^ cd.chal, 0);
+            lfsr_rollback_word(s, t, cd.rchal[i], 1);
+            lfsr_rollback_word(s, t, cd.uid ^ cd.chal[i], 0);
             cd.key = crypto1_get_lfsr(s, t, cd.key);
-            crypto1_word(s, t, cd.uid ^ cd.chal2, 0);
-            crypto1_word(s, t, cd.rchal2, 1);
-            if (cd.rresp2 == (crypto1_word(s, t, 0, 0) ^ prng_successor(cd.chal2, 64))){
+            crypto1_word(s, t, cd.uid ^ cd.chal[j], 0);
+            crypto1_word(s, t, cd.rchal[j], 1);
+            if (cd.rresp[j] == (crypto1_word(s, t, 0, 0) ^ prng_successor(cd.chal[j], 64))){
                 return true;
             }
         }
