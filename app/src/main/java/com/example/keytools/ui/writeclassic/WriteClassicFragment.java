@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import com.example.keytools.KeyTools;
 import com.example.keytools.R;
 import com.example.keytools.SettingsActivity;
+import com.example.keytools.ui.database.DataBaseFragment;
 import com.example.keytools.ui.sectorcopy.SectorCopyFragment;
 
 import java.io.IOException;
@@ -192,6 +193,7 @@ public class WriteClassicFragment extends Fragment {
         String s;
         String[] StrKeyAB = {"Key A", "Key B"};
         int i;
+        int uid;
 
 
         WriteClassic(int n){
@@ -214,7 +216,7 @@ public class WriteClassicFragment extends Fragment {
 
         @Override
         protected Integer doInBackground(Integer... kod) {
-            int uid;
+
             int tagkod;
 
             try{
@@ -409,6 +411,7 @@ public class WriteClassicFragment extends Fragment {
                 case 1:
                     s = String.format(Locale.US,getString(R.string.Запись_успешно_завершена_KEY),Crk[i].key);
                     TextWin.append(s);
+                    DataBaseFragment.AddToRecovery(uid, Crk[i].key);
                     break;
 
                 case -1:
@@ -531,6 +534,7 @@ public class WriteClassicFragment extends Fragment {
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     class UID extends AsyncTask<Void, Void, Integer> {
         KeyTools keytools;
 

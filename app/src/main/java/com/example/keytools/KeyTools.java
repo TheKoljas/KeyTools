@@ -51,12 +51,12 @@ public class KeyTools {
 
     public static class Sniff {
         public byte filter;
-        byte nkey;
-        byte[] keyAB;
-        byte[] blockNumber;
-        int[] TagChall;
-        int[] ReadChall;
-        int[] ReadResp;
+        public byte nkey;
+        public byte[] keyAB;
+        public byte[] blockNumber;
+        public int[] TagChall;
+        public int[] ReadChall;
+        public int[] ReadResp;
     }
 
     public KeyTools(int nsn) {

@@ -11,6 +11,17 @@ public class Crapto1 {
     public int rresp2;
     public long key;
 
+    public  static class CraptoData {
+        public int uid;
+        public int chal;
+        public int rchal;
+        public int rresp;
+        public int chal2;
+        public int rchal2;
+        public int rresp2;
+        public long key;
+    }
+
     protected class Crypto1State {
         int odd, even;
     }
@@ -18,6 +29,28 @@ public class Crapto1 {
     byte[] filterlut = new byte[1 << 20];
     int LF_POLY_ODD = 0x29CE5C;
     int LF_POLY_EVEN = 0x870804;
+
+
+    public boolean RecoveryKey(CraptoData cd) {
+
+        Crypto1State s[];
+        int  t;
+
+        s = lfsr_recovery32(cd.rresp ^ prng_successor(cd.chal, 64), 0);
+
+        for(t = 0; (s[t].odd != 0) | (s[t].even != 0); ++t) {
+            lfsr_rollback_word(s, t, 0, 0);
+            lfsr_rollback_word(s, t, cd.rchal, 1);
+            lfsr_rollback_word(s, t, cd.uid ^ cd.chal, 0);
+            cd.key = crypto1_get_lfsr(s, t, cd.key);
+            crypto1_word(s, t, cd.uid ^ cd.chal2, 0);
+            crypto1_word(s, t, cd.rchal2, 1);
+            if (cd.rresp2 == (crypto1_word(s, t, 0, 0) ^ prng_successor(cd.chal2, 64))){
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     public boolean RecoveryKey() {

@@ -23,14 +23,23 @@ public class KeyBaseContract {
         public final static String COLUMN_ADRESS = "adress";
     }
 
-    public static final class KeyAdresses implements BaseColumns {
+    public static final class KeyAdress implements BaseColumns {
 
-        public final static String TABLE_NAME = "adresses";
+        public final static String TABLE_NAME = "keyadress";
 
         public final static String _ID = BaseColumns._ID;
         public final static String COLUMN_KEYADRESS = "keyadress";
+        public final static String COLUMN_UID = "uid";
         public final static String COLUMN_CRYPTOKEY = "cryptokey";
     }
 
+    public static final class Recovery implements BaseColumns {
+
+        public final static String TABLE_NAME = "recovery";
+
+        public final static String _ID = BaseColumns._ID;
+        public final static String COLUMN_UID = "uid";
+        public final static String COLUMN_CRYPTOKEY = "cryptokey";
+    }
 
 }

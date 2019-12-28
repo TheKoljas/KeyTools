@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 
 import com.example.keytools.ui.database.data.KeyBaseContract.UidKey;
 import com.example.keytools.ui.database.data.KeyBaseContract.Adresses;
+import com.example.keytools.ui.database.data.KeyBaseContract.KeyAdress;
+import com.example.keytools.ui.database.data.KeyBaseContract.Recovery;
 
 
 public class KeyBaseDbHelper extends SQLiteOpenHelper {
@@ -33,6 +35,21 @@ public class KeyBaseDbHelper extends SQLiteOpenHelper {
                 + Adresses.COLUMN_ADRESS + " TEXT NOT NULL UNIQUE);";
         // Запускаем создание таблицы
         db.execSQL(SQL_CREATE_ADRESSES_TABLE);
+
+        String SQL_CREATE_KEYADRESS_TABLE = "CREATE TABLE " + KeyAdress.TABLE_NAME + " ("
+                + KeyAdress._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + KeyAdress.COLUMN_KEYADRESS + " INTEGER,"
+                + KeyAdress.COLUMN_UID + " INTEGER ,"
+                + KeyAdress.COLUMN_CRYPTOKEY + " INTEGER);";
+        // Запускаем создание таблицы
+        db.execSQL(SQL_CREATE_KEYADRESS_TABLE);
+
+        String SQL_CREATE_RECOVERY_TABLE = "CREATE TABLE " + Recovery.TABLE_NAME + " ("
+                + Recovery._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + Recovery.COLUMN_UID + " INTEGER UNIQUE ,"
+                + Recovery.COLUMN_CRYPTOKEY + " INTEGER );";
+        // Запускаем создание таблицы
+        db.execSQL(SQL_CREATE_RECOVERY_TABLE);
 
     }
 
