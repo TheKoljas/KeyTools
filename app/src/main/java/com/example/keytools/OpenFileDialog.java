@@ -81,7 +81,7 @@ public class OpenFileDialog extends AlertDialog.Builder {
     public OpenFileDialog(Context context) {
         super(context);
         if(currentPath == null) {
-            currentPath = context.getExternalFilesDir(null).getPath();//Environment.getExternalStorageDirectory().getPath();
+            currentPath = context.getExternalFilesDir("dumps").getPath();//Environment.getExternalStorageDirectory().getPath();
         }
         isOnlyFoldersFilter = false;
         title = createTitle(context);

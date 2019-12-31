@@ -1,17 +1,23 @@
 package com.example.keytools;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 
+import com.example.keytools.ui.database.DataBaseFragment;
+import com.example.keytools.ui.database.data.KeyBaseDbHelper;
 import com.example.usbserial.driver.UsbSerialDriver;
 import com.example.usbserial.driver.UsbSerialPort;
 import com.example.usbserial.driver.UsbSerialProber;
 
+import android.os.Environment;
 import android.view.Gravity;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -28,8 +34,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.List;
+
+import static android.os.Environment.DIRECTORY_PICTURES;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,17 +120,128 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        Intent intent;
         switch (item.getItemId()) {
 
             case R.id.action_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
+                intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                return true;
+
+            case R.id.action_exportbase:
+                String in = this.getDatabasePath(KeyBaseDbHelper.DATABASE_NAME).toString();
+                String out = this.getExternalFilesDir("databases").getPath() + "/" + KeyBaseDbHelper.DATABASE_NAME;
+                File src = new File(in);
+                File dst = new File(out);
+                FileChannel inChannel = null;
+                FileChannel outChannel =null;
+                try {
+                    inChannel = new FileInputStream(src).getChannel();
+                    outChannel = new FileOutputStream(dst).getChannel();
+                    inChannel.transferTo(0, inChannel.size(), outChannel);
+                } catch (FileNotFoundException e) {
+                    Toast toast = Toast.makeText(this, "Ошибка \n" + e.toString() , Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    return false;
+                }
+                catch(IOException e1){
+                    Toast toast = Toast.makeText(this, "Ошибка \n" + e1.toString() , Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    return false;
+                }
+                finally {
+                    try{
+                        if (inChannel != null)
+                            inChannel.close();
+                        if (outChannel != null)
+                            outChannel.close();
+                    }catch(IOException e2){
+                        Toast toast = Toast.makeText(this, "Ошибка \n" + e2.toString() , Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                        return false;
+                    }
+                }
+                Toast toast = Toast.makeText(this, "База данных экспортирована !", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                return true;
+
+            case R.id.action_importbase:
+
+                new android.app.AlertDialog.Builder(this)
+                        .setTitle("Импорт базы данных !")
+                        .setMessage("Вы действительно хотите заменить текущую базу данных импортированной ?")
+                        .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
+                        })
+                        .setPositiveButton("Заменить", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                ImportBase();
+                            }
+                        })
+                        .show();
+                return true;
+
+            case R.id.action_showbase:
+
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+
+    private void ImportBase(){
+
+        Toast toast;
+
+        String out = this.getDatabasePath(KeyBaseDbHelper.DATABASE_NAME).toString();
+        String in = this.getExternalFilesDir("databases").getPath() + "/" + KeyBaseDbHelper.DATABASE_NAME;
+        File src = new File(in);
+        File dst = new File(out);
+        FileChannel inChannel = null;
+        FileChannel outChannel = null;
+        try {
+            inChannel = new FileInputStream(src).getChannel();
+            outChannel = new FileOutputStream(dst).getChannel();
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } catch (FileNotFoundException e) {
+            toast = Toast.makeText(this, "Ошибка \n" + e.toString() , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return ;
+        }
+        catch(IOException e1){
+            toast = Toast.makeText(this, "Ошибка \n" + e1.toString() , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return ;
+        }
+        finally {
+            try{
+                if (inChannel != null)
+                    inChannel.close();
+                if (outChannel != null)
+                    outChannel.close();
+            }catch(IOException e2){
+                toast = Toast.makeText(this, "Ошибка \n" + e2.toString() , Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                return ;
+            }
+        }
+        toast = Toast.makeText(this, "База данных импортирована !", Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+        DataBaseFragment.AdressIndex = 0;
+
+        Intent intent = new Intent(this, ResumeActivity.class);
+        startActivity(intent);
     }
 
 

@@ -52,7 +52,7 @@ public class DataBaseFragment extends Fragment {
     private Toast toast;
     private String s;
     private static KeyBaseDbHelper mDbHelper ;
-    private static int AdressIndex = 0;
+    public static int AdressIndex = 0;
 
     private KEYGRAB keygrab;
     private UID readuid;
@@ -161,6 +161,7 @@ public class DataBaseFragment extends Fragment {
             kod = 0x1234ABCD;
         }
         TextKod.setText(String.format("%08X", kod));
+        ShowDef();
     }
 
 
@@ -728,7 +729,7 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    private void ShowDef(){
+    public void ShowDef(){
 
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -810,7 +811,7 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    private void ShowBase(){
+    public void ShowBase(){
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
         // Зададим условие для выборки - список столбцов

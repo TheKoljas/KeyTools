@@ -14,7 +14,7 @@ import com.example.keytools.ui.database.data.KeyBaseContract.Recovery;
 
 public class KeyBaseDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "keytools.db";
+    public static final String DATABASE_NAME = "keytools.db";
     private static final int DATABASE_VERSION = 1;
 
     public KeyBaseDbHelper(@Nullable Context context) {

@@ -5,6 +5,22 @@
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/Настройки"
-        android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+<!--    android:icon="@drawable/ic_settings_white_24dp"-->
+
+    <item
+        android:id="@+id/action_exportbase"
+        android:orderInCategory="100"
+        android:title="Экспорт базы данных"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_importbase"
+        android:orderInCategory="100"
+        android:title="Импорт базы данных"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_showbase"
+        android:orderInCategory="100"
+        android:title="Показать базу данных"
+        app:showAsAction="never" />
 </menu>

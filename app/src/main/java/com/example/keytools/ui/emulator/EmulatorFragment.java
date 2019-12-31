@@ -284,7 +284,7 @@ public class EmulatorFragment extends Fragment {
         String filename = "dump_"
                 + (new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()))
                 .format(new Date()) + ".mfd";
-        File file = new File(getContext().getExternalFilesDir(null), filename);
+        File file = new File(getContext().getExternalFilesDir("dumps"), filename);
         try
         {
             FileOutputStream fOut = new FileOutputStream(file);
