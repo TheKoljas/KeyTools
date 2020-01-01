@@ -83,9 +83,6 @@ public class DataBaseFragment extends Fragment {
                         StartAddUid();
 //                        AddUid();
                         break;
-                    case R.id.btnShow:
-                        ShowBase();
-                        break;
                     case R.id.btnDelAdress:
                         DelAdress();
                         break;
@@ -111,7 +108,6 @@ public class DataBaseFragment extends Fragment {
             }
         };
         Button btnAddUID = root.findViewById(R.id.btnAddUID);
-        Button btnShow = root.findViewById(R.id.btnShow);
         Button btnDel = root.findViewById(R.id.btnDelAdress);
         Button btnAddAdress = root.findViewById(R.id.btnAddAdress);
         Button btnSelectAdress = root.findViewById(R.id.btnSelectAdress);
@@ -121,7 +117,6 @@ public class DataBaseFragment extends Fragment {
         Button btnRecovery = root.findViewById(R.id.btnRecovery);
 
         btnAddUID.setOnClickListener(oclBtn);
-        btnShow.setOnClickListener(oclBtn);
         btnDel.setOnClickListener(oclBtn);
         btnAddAdress.setOnClickListener(oclBtn);
         btnSelectAdress.setOnClickListener(oclBtn);
@@ -811,172 +806,6 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    public void ShowBase(){
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        // Зададим условие для выборки - список столбцов
-        String[] projection = {
-                UidKey._ID,
-                UidKey.COLUMN_UID };
-
-        // Делаем запрос
-        Cursor cursor = db.query(
-                UidKey.TABLE_NAME,   // таблица
-                projection,            // столбцы
-                null,                  // столбцы для условия WHERE
-                null,                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // порядок сортировки
-
-
-        try {
-            s = "Таблица содержит " + cursor.getCount() + " меток.\n\n";
-            TextWin.setText(s);
-            TextWin.append(UidKey._ID + " - " +
-                    UidKey.COLUMN_UID + "\n");
-
-            // Узнаем индекс каждого столбца
-            int idColumnIndex = cursor.getColumnIndex(UidKey._ID);
-            int uidColumnIndex = cursor.getColumnIndex(UidKey.COLUMN_UID);
-
-            // Проходим через все ряды
-            while (cursor.moveToNext()) {
-                // Используем индекс для получения строки или числа
-                int currentID = cursor.getInt(idColumnIndex);
-                int currentUID = cursor.getInt(uidColumnIndex);
-                // Выводим значения каждого столбца
-                TextWin.append(("\n" + currentID + " - " + String.format("%08X", currentUID)
-                        ));
-            }
-        } finally {
-            // Всегда закрываем курсор после чтения
-            cursor.close();
-        }
-
-        String[] projection1 = {
-                Adresses._ID,
-                Adresses.COLUMN_ADRESS };
-
-        // Делаем запрос
-        cursor = db.query(
-                Adresses.TABLE_NAME,   // таблица
-                projection1,            // столбцы
-                null,                  // столбцы для условия WHERE
-                null,                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // порядок сортировки
-
-
-        try {
-            TextWin.append("\n\nТаблица содержит " + cursor.getCount() + " Адресов.\n\n");
-            TextWin.append(Adresses._ID + " - " +
-                    Adresses.COLUMN_ADRESS + "\n");
-
-            // Узнаем индекс каждого столбца
-            int idColumnIndex = cursor.getColumnIndex(Adresses._ID);
-            int uidColumnIndex = cursor.getColumnIndex(Adresses.COLUMN_ADRESS);
-
-            // Проходим через все ряды
-            while (cursor.moveToNext()) {
-                // Используем индекс для получения строки или числа
-                int currentID = cursor.getInt(idColumnIndex);
-                String s = cursor.getString(uidColumnIndex);
-                // Выводим значения каждого столбца
-                TextWin.append(("\n" + currentID + " - " + s
-                ));
-            }
-        } finally {
-            // Всегда закрываем курсор после чтения
-            cursor.close();
-        }
-
-
-
-        // Делаем запрос
-        cursor = db.query(
-                KeyAdress.TABLE_NAME,   // таблица
-                null,            // столбцы
-//                KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex,                  // столбцы для условия WHERE
-                null,
-                null,                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // порядок сортировки
-
-
-        try {
-            TextWin.append("\n\nТаблица содержит " + cursor.getCount() + " ключей.\n\n");
-            TextWin.append(KeyAdress._ID + " - "
-                    + KeyAdress.COLUMN_KEYADRESS + " - "
-                    +  KeyAdress.COLUMN_UID + " - "
-                    + KeyAdress.COLUMN_CRYPTOKEY);
-
-            // Узнаем индекс каждого столбца
-            int idColumnIndex = cursor.getColumnIndex(KeyAdress._ID);
-            int keyadressColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_KEYADRESS);
-            int uidkeyColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_UID);
-            int cryptokeyColumnIndex = cursor.getColumnIndex(KeyAdress.COLUMN_CRYPTOKEY);
-
-            // Проходим через все ряды
-            while (cursor.moveToNext()) {
-                // Используем индекс для получения строки или числа
-                int currentID = cursor.getInt(idColumnIndex);
-                int currentKEYADRESS = cursor.getInt(keyadressColumnIndex);
-                int currentUIDKEY = cursor.getInt(uidkeyColumnIndex);
-                long currentCRYPTOKEY = cursor.getLong(cryptokeyColumnIndex);
-                // Выводим значения каждого столбца
-                TextWin.append(("\n" + currentID + " - "
-                        + currentKEYADRESS + " - "
-                        + String.format("%08X - %012X", currentUIDKEY, currentCRYPTOKEY)
-                ));
-            }
-        } finally {
-            // Всегда закрываем курсор после чтения
-            cursor.close();
-        }
-
-        // Делаем запрос
-        cursor = db.query(
-                Recovery.TABLE_NAME,   // таблица
-                null,            // столбцы
-                null,
-                null,                  // значения для условия WHERE
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // порядок сортировки
-
-
-        try {
-            TextWin.append("\n\nКорзина содержит " + cursor.getCount() + " ключей.\n\n");
-            TextWin.append(Recovery._ID + " - "
-                    +  Recovery.COLUMN_UID + " - "
-                    + Recovery.COLUMN_CRYPTOKEY);
-
-            // Узнаем индекс каждого столбца
-            int idColumnIndex = cursor.getColumnIndex(Recovery._ID);
-            int uidkeyColumnIndex = cursor.getColumnIndex(Recovery.COLUMN_UID);
-            int cryptokeyColumnIndex = cursor.getColumnIndex(Recovery.COLUMN_CRYPTOKEY);
-
-            // Проходим через все ряды
-            while (cursor.moveToNext()) {
-                // Используем индекс для получения строки или числа
-                int currentID = cursor.getInt(idColumnIndex);
-                int currentUIDKEY = cursor.getInt(uidkeyColumnIndex);
-                long currentCRYPTOKEY = cursor.getLong(cryptokeyColumnIndex);
-                // Выводим значения каждого столбца
-                TextWin.append(("\n" + currentID + " - "
-                        + String.format("%08X - %012X", currentUIDKEY, currentCRYPTOKEY)
-                ));
-            }
-        } finally {
-            // Всегда закрываем курсор после чтения
-            cursor.close();
-        }
-    }
-
-
     private void StartAddUid(){
 
         if(KeyTools.Busy){
@@ -1541,11 +1370,6 @@ public class DataBaseFragment extends Fragment {
             if(!keytools.readuid(sPort)){
                 return -1;
             }
-            if (uid != keytools.uid) {
-                publishProgress(5);
-                while(keytools.readuid(sPort));
-                return -1;
-            }
 
             if(!keytools.authent(sPort, block, AB, oldkey)){
                 return -2;
@@ -1743,11 +1567,6 @@ public class DataBaseFragment extends Fragment {
             byte AB = 0;
             crkey = oldkey;
             if(!keytools.readuid(sPort)){
-                return -1;
-            }
-            if (uid != keytools.uid) {
-                publishProgress(5);
-                while(keytools.readuid(sPort));
                 return -1;
             }
 

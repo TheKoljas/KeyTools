@@ -188,6 +188,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_showbase:
 
+                intent = new Intent(this, ShowBaseActivity.class);
+                startActivity(intent);
                 return true;
 
             default:
