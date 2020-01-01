@@ -192,7 +192,7 @@ public class WriteClassicFragment extends Fragment {
         byte AB;
         String s;
         String[] StrKeyAB = {"Key A", "Key B"};
-        int i;
+        int i, err;
         int uid;
 
 
@@ -268,11 +268,11 @@ public class WriteClassicFragment extends Fragment {
                     if(!waittag(uid)){      // Ожидание метки
                         return null;
                     }
-                    while( 0 != (writesector(crkey , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
+                    while( 0 != (err = writesector(crkey , Crk[i].key, tagkod, uid))){    // Запись данных 0-го сектора
                         if (isCancelled()) {
                             return null;
                         }
-                        publishProgress(6,1);
+                        publishProgress(6, 1, err);
                     }
 
                     publishProgress(7, i);
@@ -294,11 +294,11 @@ public class WriteClassicFragment extends Fragment {
                                 if(!waittag(uid)){      // Ожидание метки
                                     return null;
                                 }
-                                while( 0 != (writesector(crkey , defkey, tagkod, uid))){    // Запись данных 0-го сектора
+                                while( 0 != (err = writesector(crkey , defkey, tagkod, uid))){    // Запись данных 0-го сектора
                                     if (isCancelled()) {
                                         return null;
                                     }
-                                    publishProgress(6,1);
+                                    publishProgress(6, 1, err);
                                 }
                                 return -2;
                             }
@@ -377,7 +377,7 @@ public class WriteClassicFragment extends Fragment {
                             pd.setMessage(getString(R.string.Поднесите_заготовку_Mifare_Classic_к_устройству));
                             break;
                         case 1:
-                            pd.setMessage(getString(R.string.Ошибка_записи));
+                            pd.setMessage(getString(R.string.Ошибка_записи) + " " + values[2]);
                             break;
                     }
                     pd.getButton(Dialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
@@ -484,7 +484,6 @@ public class WriteClassicFragment extends Fragment {
         int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
             byte block = 1;
             byte AB = 0;
-            crkey = oldkey;
             if(!keytools.readuid(sPort)){
                 return -1;
             }
@@ -516,7 +515,6 @@ public class WriteClassicFragment extends Fragment {
             }
 
             block = 1;
-            crkey = newkey;
             if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
                     || !keytools.readblock(sPort, block, blockBuffer)){
                 return -6;

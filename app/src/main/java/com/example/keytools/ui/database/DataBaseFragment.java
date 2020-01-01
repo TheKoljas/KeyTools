@@ -1215,7 +1215,7 @@ public class DataBaseFragment extends Fragment {
         byte AB;
         String s;
         String[] StrKeyAB = {"Key A", "Key B"};
-        int i;
+        int err;
 
 
         WriteClassic(){
@@ -1267,11 +1267,11 @@ public class DataBaseFragment extends Fragment {
                 }
 
                 tagkod = kod[0];
-                while (0 != (writesector(defkey, crkey, tagkod, keytools.uid))) {    // Запись данных 0-го сектора
+                while (0 != (err = writesector(defkey, crkey, tagkod, keytools.uid))) {    // Запись данных 0-го сектора
                     if (isCancelled()) {
                         return null;
                     }
-                    publishProgress(2);
+                    publishProgress(2, err);
                 }
 
 
@@ -1309,7 +1309,7 @@ public class DataBaseFragment extends Fragment {
                     break;
 
                 case 2:
-                    pd.setMessage(getString(R.string.Ошибка_записи));
+                    pd.setMessage(getString(R.string.Ошибка_записи) + " " + values[1]);
                     break;
 
                 default:
@@ -1366,8 +1366,12 @@ public class DataBaseFragment extends Fragment {
         int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
             byte block = 1;
             byte AB = 0;
-            crkey = oldkey;
             if(!keytools.readuid(sPort)){
+                return -1;
+            }
+            if (uid != keytools.uid) {
+                publishProgress(5);
+                while(keytools.readuid(sPort));
                 return -1;
             }
 
@@ -1393,7 +1397,6 @@ public class DataBaseFragment extends Fragment {
             }
 
             block = 1;
-            crkey = newkey;
             if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
                     || !keytools.readblock(sPort, block, blockBuffer)){
                 return -6;
@@ -1421,6 +1424,7 @@ public class DataBaseFragment extends Fragment {
         byte block = 1;
         byte AB;
         String s;
+        int err;
 
 
         RECOVERY(){
@@ -1467,11 +1471,11 @@ public class DataBaseFragment extends Fragment {
                     }
                 }
 
-                while (0 != (writesector(crkey, defkey, 0, keytools.uid))) {    // Запись данных 0-го сектора
+                while (0 != (err =(writesector(crkey, defkey, 0, keytools.uid)))) {    // Запись данных 0-го сектора
                     if (isCancelled()) {
                         return null;
                     }
-                    publishProgress(2);
+                    publishProgress(2, err);
                 }
 
 
@@ -1509,7 +1513,7 @@ public class DataBaseFragment extends Fragment {
                     break;
 
                 case 2:
-                    pd.setMessage(getString(R.string.Ошибка_записи));
+                    pd.setMessage(getString(R.string.Ошибка_записи) + " " + values[1] );
                     break;
 
                 default:
@@ -1565,8 +1569,13 @@ public class DataBaseFragment extends Fragment {
         int writesector(long oldkey, long newkey, int kod, int uid) throws IOException{
             byte block = 1;
             byte AB = 0;
-            crkey = oldkey;
             if(!keytools.readuid(sPort)){
+                return -1;
+            }
+
+            if (uid != keytools.uid) {
+                publishProgress(5);
+                while(keytools.readuid(sPort));
                 return -1;
             }
 
@@ -1592,7 +1601,6 @@ public class DataBaseFragment extends Fragment {
             }
 
             block = 1;
-            crkey = newkey;
             if(!keytools.readuid(sPort) || !keytools.authent(sPort, block, AB, newkey)
                     || !keytools.readblock(sPort, block, blockBuffer)){
                 return -6;

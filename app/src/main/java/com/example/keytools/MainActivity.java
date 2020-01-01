@@ -13,11 +13,8 @@ import com.example.usbserial.driver.UsbSerialDriver;
 import com.example.usbserial.driver.UsbSerialPort;
 import com.example.usbserial.driver.UsbSerialProber;
 
-import android.os.Environment;
 import android.view.Gravity;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -42,7 +39,6 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.List;
 
-import static android.os.Environment.DIRECTORY_PICTURES;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -78,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         UsbManager manager = (UsbManager)getSystemService(Context.USB_SERVICE);
         List availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
         if (availableDrivers.isEmpty()) {
-            Toast toast = Toast.makeText(this, R.string.Адаптер_недоступен, Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this, R.string.Адаптер_не_обнаружен, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;

@@ -23,7 +23,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static int pause = 0;
     public static int nsniff = 2;
     private final int defnsniff = 2;
-    private final int defpause = 10;
+    private final int defpause = 20;
 
     static SharedPreferences mSettings;
     Toast toast;
