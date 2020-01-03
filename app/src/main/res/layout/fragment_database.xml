@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:text="Всего меток"
+            android:text="@string/Всего_меток"
             android:textSize="18sp" />
 
         <TextView
@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:text="Добавить" />
+            android:text="@string/Добавить" />
     </LinearLayout>
 
     <View
@@ -55,7 +55,7 @@
                 android:id="@+id/textAdress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Адрес объекта"
+                android:hint="@string/Адрес_объекта"
                 android:textSize="18sp" />
 
         </LinearLayout>
@@ -71,7 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Число меток на объекте"
+            android:text="@string/Число_меток_на_объекте"
             android:textSize="18sp" />
 
         <TextView
@@ -93,21 +93,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Выбрать" />
+            android:text="@string/Выбрать" />
 
         <Button
             android:id="@+id/btnAddAdress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Добавить" />
+            android:text="@string/Добавить" />
 
         <Button
             android:id="@+id/btnDelAdress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Удалить" />
+            android:text="@string/Удалить" />
     </LinearLayout>
 
     <LinearLayout
@@ -120,7 +120,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Захват" />
+            android:text="@string/Захват" />
 
 
     </LinearLayout>
@@ -189,7 +189,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Восстановить" />
+            android:text="@string/Восстановить" />
 
     </LinearLayout>
 

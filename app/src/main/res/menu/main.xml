@@ -9,6 +9,11 @@
 <!--    android:icon="@drawable/ic_settings_white_24dp"-->
 
     <item
+        android:id="@+id/action_connect"
+        android:orderInCategory="100"
+        android:title="Соединение с адаптером"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_exportbase"
         android:orderInCategory="100"
         android:title="Экспорт базы данных"

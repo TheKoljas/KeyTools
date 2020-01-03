@@ -425,56 +425,6 @@ public class DataBaseFragment extends Fragment {
     }
 
 
-    void GrabKey_old(){
-
-        if(AdressIndex == 0){
-            toast = Toast.makeText(getContext(), "База адресов пуста !", Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            return;
-        }
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        String SQL_QUERY = "SELECT "
-                + UidKey.COLUMN_UID
-                + " FROM "
-                + UidKey.TABLE_NAME
-                + " EXCEPT "
-                + " SELECT "
-                + KeyAdress.COLUMN_UID
-                + " FROM "
-                + KeyAdress.TABLE_NAME
-                + " WHERE "
-                + KeyAdress.COLUMN_KEYADRESS + "=" + AdressIndex;
-        Cursor cursor = db.rawQuery(SQL_QUERY, null);
-        try {
-            TextWin.append("\n\nДобавлено  " + cursor.getCount() + " меток.\n\n");
-            // Узнаем индекс каждого столбца
-            int uidColumnIndex = cursor.getColumnIndex(UidKey.COLUMN_UID);
-            ContentValues values = new ContentValues();
-            // Проходим через все ряды
-            while (cursor.moveToNext()) {
-                int currentUID = cursor.getInt(uidColumnIndex);
-                TextWin.append("\n" +  String.format("%08X", currentUID));
-                values.put(KeyAdress.COLUMN_UID, currentUID);
-                values.put(KeyAdress.COLUMN_KEYADRESS, AdressIndex);
-                long ck = 0x1234567890ABL;
-                values.put(KeyAdress.COLUMN_CRYPTOKEY, ck);
-                long newRowId = db.insert(KeyAdress.TABLE_NAME, null, values);
-            }
-        } catch (RuntimeException e){
-            toast = Toast.makeText(getContext(), "Ошибка !\n" +
-                    e.toString(), Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            TextWin.append(e.toString());
-        }
-        finally {
-            // Всегда закрываем курсор после чтения
-            cursor.close();
-        }
-    }
-
 
     private void DeleteUid(int uid){
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -701,25 +651,6 @@ public class DataBaseFragment extends Fragment {
             toast.show();
         }
         AdressIndex = 0;    // Будет показан последний введенный адрес
-        ShowDef();
-    }
-
-
-    void AddUid(){
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        Random random = new Random();
-        values.put(UidKey.COLUMN_UID, random.nextInt());
-        long newRowId = db.insert(UidKey.TABLE_NAME, null, values);
-        if(newRowId == -1){
-            toast = Toast.makeText(getContext(), "Эта метка уже есть в базе !", Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-        }else{
-            toast = Toast.makeText(getContext(), "Метка добавлена в базу !", Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-        }
         ShowDef();
     }
 
@@ -1207,14 +1138,12 @@ public class DataBaseFragment extends Fragment {
     @SuppressLint("StaticFieldLeak")
     private class WriteClassic extends AsyncTask<Integer, Integer, Integer> {
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
         KeyTools keytools;
         byte[] blockBuffer = new byte[16];
         long crkey, defkey = 0xFFFFFFFFFFFFL;
         byte block = 1;
         byte AB;
         String s;
-        String[] StrKeyAB = {"Key A", "Key B"};
         int err;
 
 
@@ -1239,7 +1168,6 @@ public class DataBaseFragment extends Fragment {
 
         @Override
         protected Integer doInBackground(Integer... kod) {
-            int uid;
             int tagkod;
 
             try{
@@ -1417,7 +1345,6 @@ public class DataBaseFragment extends Fragment {
     @SuppressLint("StaticFieldLeak")
     private class RECOVERY extends AsyncTask<Void, Integer, Integer> {
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
         KeyTools keytools;
         byte[] blockBuffer = new byte[16];
         long crkey, defkey = 0xFFFFFFFFFFFFL;

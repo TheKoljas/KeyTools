@@ -1,8 +1,12 @@
 package com.example.keytools;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
@@ -42,11 +46,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static Toolbar toolbar;
+    public Toolbar toolbar;
 
     public static UsbSerialPort sPort = null;
 
     private AppBarConfiguration mAppBarConfiguration;
+
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,24 +77,55 @@ public class MainActivity extends AppCompatActivity {
 
         SettingsActivity.LoadSettings(this);
 
-        // Find all available drivers from attached devices.
-        UsbManager manager = (UsbManager)getSystemService(Context.USB_SERVICE);
-        List availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-        if (availableDrivers.isEmpty()) {
-            Toast toast = Toast.makeText(this, R.string.Адаптер_не_обнаружен, Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
-            return;
+        connect(null);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        registerReceiver(usbReceiver, filter);
+    }
+
+
+    @Override
+    public void onPause() {
+        unregisterReceiver(usbReceiver);
+        super.onPause();
+    }
+
+
+    private void connect(UsbDevice device){
+
+        UsbManager usbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
+        UsbDeviceConnection connection;
+
+        if(device == null) {
+            List availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager);
+            if (availableDrivers.isEmpty()) {
+                Toast toast = Toast.makeText(this, R.string.Адаптер_не_обнаружен, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+                return;
+            }
+            UsbSerialDriver driver = (UsbSerialDriver) availableDrivers.get(0);
+            device = driver.getDevice();
         }
-        UsbSerialDriver driver = (UsbSerialDriver)availableDrivers.get(0);
-        UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
+
+        connection = usbManager.openDevice(device);
         if (connection == null) {
+            if (!usbManager.hasPermission(device)) {
+                PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                usbManager.requestPermission(device, permissionIntent);
+                return;
+            }
             Toast toast = Toast.makeText(this, R.string.Адаптер_недоступен, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
         }
-        sPort = driver.getPorts().get(0);
+        sPort = UsbSerialProber.getDefaultProber().probeDevice(device).getPorts().get(0);
         try {
             sPort.open(connection);
             sPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
@@ -95,17 +133,40 @@ public class MainActivity extends AppCompatActivity {
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
         } catch (IOException e) {
-            // Deal with error.
+            Toast toast = Toast.makeText(this,"Ошибка " + e.toString(), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             try {
                 sPort.close();
             } catch (IOException e2) {
                 // Ignore.
             }
             sPort = null;
-            return;
         }
-
     }
+
+
+    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if(device != null) {
+                            connect(device);
+                        }
+                    }
+                    else {
+                        Toast toast = Toast.makeText(context, "В доступе к адаптеру отказано!", Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -122,6 +183,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_settings:
                 intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                return true;
+
+            case R.id.action_connect:
+                connect(null);
                 return true;
 
             case R.id.action_exportbase:
@@ -157,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast toast = Toast.makeText(this, "Ошибка \n" + e2.toString() , Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.CENTER, 0, 0);
                         toast.show();
-                        return false;
                     }
                 }
                 Toast toast = Toast.makeText(this, "База данных экспортирована !", Toast.LENGTH_LONG);
@@ -209,13 +273,13 @@ public class MainActivity extends AppCompatActivity {
             outChannel = new FileOutputStream(dst).getChannel();
             inChannel.transferTo(0, inChannel.size(), outChannel);
         } catch (FileNotFoundException e) {
-            toast = Toast.makeText(this, "Ошибка \n" + e.toString() , Toast.LENGTH_LONG);
+            toast = Toast.makeText(this, getString(R.string.Ошибка) + "\n" + e.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return ;
         }
         catch(IOException e1){
-            toast = Toast.makeText(this, "Ошибка \n" + e1.toString() , Toast.LENGTH_LONG);
+            toast = Toast.makeText(this, getString(R.string.Ошибка) + "\n" + e1.toString() , Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return ;
@@ -227,13 +291,12 @@ public class MainActivity extends AppCompatActivity {
                 if (outChannel != null)
                     outChannel.close();
             }catch(IOException e2){
-                toast = Toast.makeText(this, "Ошибка \n" + e2.toString() , Toast.LENGTH_LONG);
+                toast = Toast.makeText(this, getString(R.string.Ошибка) + "\n" + e2.toString() , Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
-                return ;
             }
         }
-        toast = Toast.makeText(this, "База данных импортирована !", Toast.LENGTH_LONG);
+        toast = Toast.makeText(this, R.string.База_данных_импортирована, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
         DataBaseFragment.AdressIndex = 0;
