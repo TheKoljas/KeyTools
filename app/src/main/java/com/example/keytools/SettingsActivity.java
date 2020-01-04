@@ -20,7 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String APP_PREFERENCES = "settings";
     public static final String APP_PREFERENCES_PAUSE = "pause";
     public static final String APP_PREFERENCES_NSNIFF = "nsniff";
-    public static int pause = 0;
+    public static int pause = 20;
     public static int nsniff = 2;
     private final int defnsniff = 2;
     private final int defpause = 20;

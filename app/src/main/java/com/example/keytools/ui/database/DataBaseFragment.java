@@ -1043,6 +1043,24 @@ public class DataBaseFragment extends Fragment {
         }
 
 
+        @Override
+        protected void onPostExecute(Integer arg) {
+            super.onPostExecute(arg);
+            switch (arg){
+                case -1:
+                    TextWin.append("\n" + getString(R.string.Ошибка_адаптера_Операция_прервана));
+                    toast = Toast.makeText(getContext(), getString(R.string.Ошибка_адаптера_Операция_прервана), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                    break;
+
+                default:
+            }
+            KeyTools.Busy = false;
+            pd.dismiss();
+        }
+
+
         @SuppressLint("DefaultLocale")
         @Override
         protected void onCancelled() {

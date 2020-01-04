@@ -323,4 +323,11 @@ public class KeyGrabFragment extends Fragment {
         }
     }
 
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Cancel();
+    }
+
 }
