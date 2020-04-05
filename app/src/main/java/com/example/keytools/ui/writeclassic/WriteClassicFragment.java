@@ -24,6 +24,7 @@ import com.example.keytools.KeyTools;
 import com.example.keytools.R;
 import com.example.keytools.SettingsActivity;
 import com.example.keytools.ui.database.DataBaseFragment;
+import com.example.keytools.ui.database.data.KeyBaseDbHelper;
 import com.example.keytools.ui.sectorcopy.SectorCopyFragment;
 
 import java.io.IOException;
@@ -411,6 +412,9 @@ public class WriteClassicFragment extends Fragment {
                 case 1:
                     s = String.format(Locale.US,getString(R.string.Запись_успешно_завершена_KEY),Crk[i].key);
                     TextWin.append(s);
+                    if(DataBaseFragment.mDbHelper == null){
+                        DataBaseFragment.mDbHelper = new KeyBaseDbHelper(getContext());
+                    }
                     DataBaseFragment.AddToRecovery(uid, Crk[i].key);
                     break;
 

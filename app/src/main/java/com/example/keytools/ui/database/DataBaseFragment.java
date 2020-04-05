@@ -51,7 +51,7 @@ public class DataBaseFragment extends Fragment {
     private ProgressDialog pd;
     private Toast toast;
     private String s;
-    private static KeyBaseDbHelper mDbHelper ;
+    public static KeyBaseDbHelper mDbHelper ;
     public static int AdressIndex = 0;
 
     private KEYGRAB keygrab;
